@@ -15,6 +15,7 @@
          "../parser/parse-bytecode.rkt"
          "../compiler/compiler.rkt"
          "../js-assembler/assemble.rkt"
+         (only-in pyret pyret-read-syntax)
          (for-syntax racket/base))
 
 (provide start-server)
@@ -22,10 +23,13 @@
 (define-runtime-path htdocs (build-path "htdocs"))
 
 (define language 
-  'whalesong/wescheme/lang/semantics
+  'pyret
+  ;'whalesong/wescheme/lang/semantics
   ;'whalesong/simply-scheme/semantics
   )
 
+(define (repl-read-syntax _ in)
+  (pyret-read-syntax "server" in))
 
 
 ;; make-port-response: (values response/incremental output-port)
@@ -68,11 +72,13 @@
   (if (exists-binding? 'id (request-bindings req))
       (extract-binding/single 'id (request-bindings req))
       #f))
+  
 
 (define (start req)
   (define-values (response op) 
     (make-port-response #:mime-type #"text/json" #:with-cors? #t))
   (define source-name (lookup-binding req 'name))
+  (printf "Name: ~a\n" source-name)
   (define mname (lookup-binding req 'mname))
   (define lang (lookup-binding req 'lang))
   (define src (extract-binding/single 'src (request-bindings req)))
@@ -90,7 +96,8 @@
            (port-count-lines! ip)
            (define assembled-codes
              (let loop () 
-               (define sexp (read-syntax source-name ip))
+               (define sexp (repl-read-syntax source-name ip))
+               (pretty-print sexp)
                (cond [(eof-object? sexp)
                       '()]
                      [else
@@ -108,7 +115,7 @@
            (write-json (hash 'type "repl"
                              'compiledCodes assembled-codes)
                        op)]
-          [else
+          #;[else
            (define program-input-port
              (let* ([ip (open-input-string src)])
                (port-count-lines! ip)

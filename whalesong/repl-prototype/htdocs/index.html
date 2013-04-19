@@ -8,13 +8,20 @@
 <script src="index.js"></script>
 </head>
 <body>
-<h1>Repl experiment</h1>
+  <h1>Captain Teach's Boatyard</h1>
 
-<input id="reset" type="button" value="Reset"/>
+<input id="reset" type="button" value="Swab the decks"/>
 <br/>
 
-<div id="output" style="width:500px; height:300px; border:1px solid black; overflow:scroll"></div>
+<div style="width:100%;position:absolute;top:0;height:30%;background-color:#9ff;z-index:-1;"></div>
+<div style="width:100%;position:absolute;top:0;height:100%;background-color:#ff9;z-index:-2;"></div>
+
+<div>
+  <textarea id="prompt" style="width:45%; height: 300px;"></textarea>
+  <div id="output" style="background-color:white;float:right;width:45%; height:300px; border:1px solid black; overflow:auto"></div>
+  <div style="clear:both"></div>
+</div>
 <br/>
-<input id="prompt" type="text" style="width:500px"></input><img id="break" src="break.png"/>
+<button type="submit">Yaaarrrrrrrrrrrrrrrrrrrrrrr!!!!</button><img id="break" src="break.png"/>
 </body>
 </html>
