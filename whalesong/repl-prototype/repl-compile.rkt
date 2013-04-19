@@ -43,6 +43,7 @@
   (parameterize ([current-namespace (make-repl-namespace language-module-path)])
     (printf "~a\n" (namespace-mapped-symbols (current-namespace)))
     (printf "~a\n" (eval (namespace-symbol->identifier 'p:apply-fun)))
+    (printf "~a\n" (eval 'p:apply-fun))
     (namespace-set-variable-value! 'p:apply-fun 42)
     (printf "~a\n" (eval (namespace-symbol->identifier 'p:apply-fun)))
     (compile 'p:apply-fun)))
