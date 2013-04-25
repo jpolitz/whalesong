@@ -161,14 +161,12 @@
     installPrimitiveConstant('eof', baselib.constants.EOF_VALUE);
 
 
-    // The parameter keys here must be uninterned symbols, so we explicitly
-    // call the symbol constructor here.
     installPrimitiveConstant('exception-handler-key',
-                             new baselib.symbols.Symbol("exnh"));
+                             baselib.paramz.exceptionHandlerKey);
     installPrimitiveConstant('parameterization-key',
-                             new baselib.symbols.Symbol("paramz"));
+                             baselib.paramz.parameterizationKey);
     installPrimitiveConstant('break-enabled-key',
-                             new baselib.symbols.Symbol("break-on?"));
+                             baselib.paramz.breakEnabledKey);
 
 
     var gensymCounter = 0;
@@ -2484,6 +2482,28 @@
         });
 
     installPrimitiveProcedure(
+        'exn:fail?',
+        1,
+        function(M) {
+            return baselib.exceptions.isExnFail(M.e[M.e.length-1]);
+        });
+
+    installPrimitiveProcedure(
+        'exn:fail:contract?',
+        1,
+        function(M) {
+            return baselib.exceptions.isExnFailContract(M.e[M.e.length-1]);
+        });
+
+    installPrimitiveProcedure(
+        'exn:fail:contract:arity?',
+        1,
+        function(M) {
+            return baselib.exceptions.isExnFailContractArity(M.e[M.e.length-1]);
+        });
+
+
+    installPrimitiveProcedure(
         'exn-message',
         1,
         function(M) {
@@ -2810,7 +2830,7 @@
                 sym = checkSymbol(M, "make-continuation-prompt-tag", 0);
                 return new baselib.contmarks.ContinuationPromptTag(sym.toString());
             }
-            return new baselib.contmarks.ContinuationPromptTag(void(0));
+            return new baselib.contmarks.ContinuationPromptTag(false);
         });
 
     installPrimitiveProcedure(
@@ -3157,11 +3177,33 @@
                 M.e.pop();
                 M.p = proc;
                 M.a = 0;
-                M.addPrompt(promptTag, false);
+                M.addPrompt(promptTag, false, M.e.length);
                 baselib.functions.rawApply(M);
             },
             []);
     };
+
+
+    // FIXME: we should be able to take in an arbitrary continuation
+    // as an optional second argument!
+    //
+   // I need to change the representation of continuations to be able to
+    // detect this at runtime.
+    installPrimitiveProcedure(
+        'continuation-prompt-available?',
+        1,
+        function(M) {
+            var promptTag = checkPromptTag(M, 'continuation-prompt-available?', 0);
+            var i;
+            for (i = 0; i < M.c.length; i++) {
+                var frame = M.c[i];
+                if (frame instanceof PromptFrame && frame.tag === promptTag) {
+                    return true;
+                }
+            }
+            return false;
+        });
+
 
 
     // The default abort prompt handler consumes a thunk and applies
@@ -3185,7 +3227,7 @@
             // First, find the continuation prompt.
             while(true) {
                 frame = M.c.pop();
-                if (frame instanceof PromptFrame) {
+                if (frame instanceof PromptFrame && frame.tag === promptTag) {
                     break;
                 } else if (M.c.length === 0) {
                     raiseContractError(
@@ -3215,7 +3257,7 @@
             if (M.a >= 2) {
                 promptTag = checkPromptTag(M, 'call-with-continuation-prompt', 1);
             } else {
-                promptTag = DEFAULT_CONTINUATION_PROMPT_TAG;
+                promptTag = baselib.contmarks.DEFAULT_CONTINUATION_PROMPT_TAG;
             }
             if (M.a >= 3) {
                 if (M.e[M.e.length - 1 - 3] === false) {
@@ -3224,19 +3266,23 @@
                     handler = checkProcedure(M, 'call-with-continuation-prompt', 2);
                 }
             } else {
-                if (promptTag === DEFAULT_CONTINUATION_PROMPT_TAG) {
+                if (promptTag === baselib.contmarks.DEFAULT_CONTINUATION_PROMPT_TAG) {
                     handler = defaultPromptHandler;
                 } else {
                     handler = makeDefaultPromptHandler(promptTag);
                 }
             }
-
             M.p = proc;
             if (M.a >= 1) { M.e.pop(); } // the test is redundant, but I want the parallelism.
             if (M.a >= 2) { M.e.pop(); }
             if (M.a >= 3) { M.e.pop(); }
             M.a = Math.max(M.a - 3, 0);
-            M.addPrompt(promptTag, handler);
+
+            // subtle: the prompt's environment is the one _after_ the current call!
+            // That's why we need to do M.e.length - M.a: the environment currently
+            // has extra values due to us calling the prompt's procedure here.
+            M.addPrompt(promptTag, handler, M.e.length - M.a); 
+
             baselib.functions.rawApply(M);
         });
 

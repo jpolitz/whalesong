@@ -356,8 +356,8 @@
                                                  fail(err);
                                              });
             },
-            function() {
-                fail();
+            function(err) {
+                fail(err);
             });
     };
 
@@ -499,10 +499,11 @@
         M.c.pop();
         return(M.p.mvr)(M);
     };
-    Machine.prototype.addPrompt = function(promptTag, abortHandlerClosure) {
+
+    Machine.prototype.addPrompt = function(promptTag, abortHandlerClosure, envLength) {
         this.c.push(new PromptFrame(justReturn,
-                                    DEFAULT_CONTINUATION_PROMPT_TAG,
-                                    this.e.length,
+                                    promptTag,
+                                    envLength,
                                     abortHandlerClosure));
     };
 
@@ -723,17 +724,28 @@
                     }
                     that.running = false;
                     that.breakScheduled = false;
-                    that.params.currentErrorHandler(that, e);
                     release();
+                    that.params.currentErrorHandler(that, e);
                     return;
                 } else {
-                    // General error condition: just exit out
-                    // of the trampoline and call the current error handler.
-                    that.running = false;
-                    that.breakScheduled = false;
-                    that.params.currentErrorHandler(that, e);
-                    release();
-                    return;
+                    // General error condition: if there's a exception
+                    // handler, use it.  Otherwise, just exit out of
+                    // the trampoline and call the current error
+                    // handler.
+                    var exceptionHandlerFunction = getDynamicExceptionHandlerFunction(that);
+                    if (e instanceof baselib.exceptions.RacketError && 
+                        exceptionHandlerFunction !== false) {
+                        that.p = exceptionHandlerFunction;
+                        that.a = 1;
+                        that.e.push(e.racketError);
+                        thunk = baselib.functions.rawApply;
+                    } else {
+                        that.running = false;
+                        that.breakScheduled = false;
+                        release();
+                        that.params.currentErrorHandler(that, e);
+                        return;
+                    }
                 }
             }
         }
@@ -744,6 +756,26 @@
         return;
 
     };
+
+    // getDynamicExceptionHandlerFunction: machine -> (U procedure #f)
+    //
+    // Scans for the nearest continuation mark value associated to
+    // baselib.paramz.exceptionHandlerKey.
+    //
+    // If it exists and the value is a closure, then return that closure's
+    // label.  Otherwise, return false.
+    var getDynamicExceptionHandlerFunction = function(M) {
+        var contMarks = M.captureContinuationMarks(promptTag);
+        var promptTag = baselib.contmarks.DEFAULT_CONTINUATION_PROMPT_TAG;
+        var procOrUndefined = contMarks.refFirst(baselib.paramz.exceptionHandlerKey,
+                                                 promptTag);
+        if (baselib.functions.isProcedure(procOrUndefined)) {
+            return procOrUndefined;
+        } else {
+            return false;
+        }
+    };
+
 
 
     // recomputeGas: state number -> number
@@ -856,16 +888,15 @@
         runtime.ready(function () {
             setReadyFalse();
             machine = machine || runtime.currentMachine;
-            succ = succ || function() {};
-            fail = fail || function() {};
+            var wrappedSucc = function() { if (succ) { succ.apply(null, arguments); } setReadyTrue(); }
+            var wrappedFail = function() { if (fail) { fail.apply(null, arguments); } setReadyTrue(); }
             var mainModules = machine.mainModules.slice();
             var loop = function() {
                 if (mainModules.length > 0) {
                     var nextModuleName = mainModules.shift();
-                    machine.loadAndInvoke(nextModuleName, loop, fail);
+                    machine.loadAndInvoke(nextModuleName, loop, wrappedFail);
                 } else {
-                    setReadyTrue();
-                    succ();
+                    wrappedSucc();
                 }
             };
             setTimeout(loop, 0);

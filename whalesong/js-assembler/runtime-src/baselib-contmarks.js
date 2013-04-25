@@ -47,6 +47,26 @@
         return baselib.lists.arrayToList(result);
     };
 
+
+    ContinuationMarkSet.prototype.refFirst = function(key, promptTag) {
+        // FIXME: refFirst needs to watch the promptTag as well and capture up to it.
+        var i, j;
+        var result = [];
+        var kvlist;
+        for (i = 0; i < this.kvlists.length; i++) {
+            kvlist = this.kvlists[i];
+            for (j = 0; j < kvlist.length; j++) {
+                if (baselib.equality.equals(kvlist[j][0], key)) {
+                    return (kvlist[j][1]);
+                }
+            }
+        }
+        return undefined;
+    };
+
+
+
+
     // Returns an approximate stack trace.
     // getContext: MACHINE -> (arrayof (U Procedure (Vector source line column position span)))
     ContinuationMarkSet.prototype.getContext = function(MACHINE) {
@@ -84,22 +104,35 @@
 
     // A continuation prompt tag labels a prompt frame.
     var ContinuationPromptTag = function(name) {
-	this.name = name;         // String
+	this.name = name;         // (U String false)
 
     };
 
     ContinuationPromptTag.prototype.toDomNode = function(params) {
         var dom = document.createElement("span");
-        dom.appendChild(document.createTextNode('#<continuation-prompt-tag:' + this.name + '>'));
+        if (this.name) {
+            dom.appendChild(document.createTextNode('#<continuation-prompt-tag:' 
+                                                    + this.name + '>'));
+        } else {
+            dom.appendChild(document.createTextNode('#<continuation-prompt-tag>'));
+        }
         return dom;
     };
 
     ContinuationPromptTag.prototype.toWrittenString = function(cache) {
-        return '#<continuation-prompt-tag' + this.name + '>';
+        if (this.name) {
+            return '#<continuation-prompt-tag' + this.name + '>';
+        } else {
+            return '#<continuation-prompt-tag>';
+        }
     };
 
     ContinuationPromptTag.prototype.toDisplayedString = function(cache) {
-        return '#<continuation-prompt-tag' + this.name + '>';
+        if (this.name) {
+            return '#<continuation-prompt-tag' + this.name + '>';
+        } else {
+            return '#<continuation-prompt-tag>';
+        }
     };
 
 
