@@ -4,12 +4,14 @@
          file/gzip
          racket/runtime-path
          racket/port
+         racket/path
          racket/match
          racket/pretty
          web-server/servlet-env
          web-server/servlet
          "repl-compile.rkt"         
          "modularize-input-port.rkt"
+         "../parameters.rkt"
          "../make/make-structs.rkt"
          "../js-assembler/package.rkt"
          "../parser/parse-bytecode.rkt"
@@ -154,6 +156,8 @@
   (require racket/cmdline)
   (void (command-line
          #:once-each 
+         [("--root-dir") root "Root directory to look for included files, default (current-directory)"
+          (current-root-path (simple-form-path root))]
          [("-p" "--port") p "Port (default 8000)" 
           (current-port (string->number p))]))
   (sync (start-server #:port (current-port))))

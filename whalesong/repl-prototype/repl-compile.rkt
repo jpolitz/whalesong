@@ -25,7 +25,7 @@
   (define ns (make-fresh-namespace))
   (parameterize ([current-namespace ns])
     (namespace-attach-module this-namespace language-module-path)  
-    ;; NOTE(joe): doing this causes a core dump?
+    ;; NOTE(joe): doing this causes a core dump?  Investigate someday
 ;;    (namespace-attach-module ns language-module-path)  
     (namespace-require/copy language-module-path))
   ns)
@@ -41,12 +41,7 @@
 ;; time.
 (define (repl-compile body #:lang [language-module-path 'racket/base])
   (parameterize ([current-namespace (make-repl-namespace language-module-path)])
-    (printf "~a\n" (namespace-mapped-symbols (current-namespace)))
-    (printf "~a\n" (eval (namespace-symbol->identifier 'p:apply-fun)))
-    (printf "~a\n" (eval 'p:apply-fun))
-    (namespace-set-variable-value! 'p:apply-fun 42)
-    (printf "~a\n" (eval (namespace-symbol->identifier 'p:apply-fun)))
-    (compile 'p:apply-fun)))
+    (compile body)))
 
 
 

@@ -11,15 +11,12 @@
 (provide write-repl-runtime-files)
 
 (define-runtime-path collects-path (build-path "htdocs" "collects"))
-(define-runtime-path language-path 
-  (build-path "../wescheme/lang/semantics.rkt"))
-
 
 
 ;; write-repl-runtime-files: -> void
 ;; Write out the support library necessary to run Whalesong programs.
 ;; Includes the basic runtime as well as the language.
-(define (write-repl-runtime-files)
+(define (write-repl-runtime-files language-path)
 
   (unless (directory-exists? collects-path)
     (make-directory collects-path))
@@ -67,4 +64,10 @@
 
 
 (module+ main 
-  (write-repl-runtime-files))
+  (command-line
+    #:once-each
+    ("--root-dir" path "Use the given root directory"
+     (current-root-path (simple-form-path path)))
+    ("--language-path" path "Use the given path as the language context for the Whalesong browser runtime"
+      (write-repl-runtime-files (simple-form-path path)))))
+

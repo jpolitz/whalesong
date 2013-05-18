@@ -71,5 +71,9 @@ jQuery(document).ready(function() {
     };
 
     var repl;
-    plt.runtime.makeRepl({ write: write }, afterReplSetup);
+    // TODO(joe): It's unfortunate that naming is by path here
+    plt.runtime.makeRepl({
+      write: write,
+      language: "root/src/lang/pyret-lang-whalesong.rkt"
+    }, afterReplSetup);
 });
