@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="collects/runtime.js"></script>
+<script src="collects/library.js"></script>
+<script src="easyXDM-min.js"></script>
+<script src="repl.js"></script>
+<!-- <script src="index.js"></script> -->
+<script src="captain.js"></script>
+<style>
+textarea {
+  font-family: monospace;
+}
+textarea.code {
+width: 400px;
+height: 300px;
+}
+#users {
+margin: 10px;
+}
+.stage {
+float: left;
+width: 70px;
+height: 70px;
+padding: 5px;
+margin: 5px;
+border: 2px dotted blue;
+}
+.stage.active {
+background-color: green;
+cursor: pointer;
+}
+.stage.completed {
+background-color: gray;
+}
+.stage.blocked {
+background-image: url("locked.png");
+background-repeat: no-repeat;
+background-position: 50% 50%;
+}
+</style>
+</head>
+<body>
+  <h1>Captain Teach's Boatyard</h1>
+
+  <div id="users">Become: </div>
+  
+<div style="width:100%;position:absolute;top:0;height:30%;background-color:#9ff;z-index:-1;"></div>
+<div style="width:100%;position:absolute;top:0;height:100%;background-color:#ff9;z-index:-2;"></div>
+
+<div id="stages">
+  <div id="dd" class="stage active">
+    <span>Data Defn.</span><br/>
+  </div>
+  <div id="example" class="stage">
+    <span>Example</span>
+  </div>
+  <div id="template" class="stage">
+    <span>Template</span>
+  </div>
+  <div id="contract" class="stage">
+    <span>Contract</span>
+  </div>
+  <div id="tests" class="stage">
+    <span>Tests</span>
+  </div>
+  <div id="code" class="stage">
+    <span>Code</span>
+  </div>
+</div>
+<div style="clear: both;"></div>
+
+<div id="contents"></div>
+
+</body>
+</html>
