@@ -1,3 +1,4 @@
+*.swp
 compiled/
 whalesong/whalesong
 whalesong/whalesong-gui

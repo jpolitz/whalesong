@@ -17,6 +17,7 @@
         this.compilerUrl = options.compilerUrl || 'rpc.html';
         this._xhr = undefined;
         if (options.write) { this.write = options.write; }
+        if (options.prettyPrint) { this.prettyPrint = options.prettyPrint; }
         this.language = (options.language || 
                          'whalesong/wescheme/lang/semantics.rkt');
         setupMachine(this, afterSetup);
@@ -172,7 +173,14 @@
                                  results.push(that.M.e[that.M.e.length - 1 - i]);
                              }
                              for (i = 0; i < results.length; i++) {
-                                 that.printlnIgnoringVoid(results[i]);
+                                if (typeof that.prettyPrint === 'function') {
+                                  if (!(that.prettyPrint(results[i]))) {
+                                    that.printlnIgnoringVoid(results[i]);
+                                  }
+                                }
+                                else {
+                                  that.printlnIgnoringVoid(results[i]);
+                                }
                              };
                              k();
                          };

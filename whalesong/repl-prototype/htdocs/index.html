@@ -6,6 +6,11 @@
 <script src="easyXDM-min.js"></script>
 <script src="repl.js"></script>
 <script src="index.js"></script>
+<style>
+textarea {
+  font-family: monospace;
+}
+</style>
 </head>
 <body>
   <h1>Captain Teach's Boatyard</h1>
@@ -17,11 +22,15 @@
 <div style="width:100%;position:absolute;top:0;height:100%;background-color:#ff9;z-index:-2;"></div>
 
 <div>
-  <textarea id="prompt" style="width:45%; height: 300px;"></textarea>
-  <div id="output" style="background-color:white;float:right;width:45%; height:300px; border:1px solid black; overflow:auto"></div>
+  <textarea id="program" style="width:45%; height: 300px"></textarea>
+  <div id="output" style="background-color:#eee;float:right;width:45%; height:300px; border:1px solid black; overflow:auto">
+    <div id="prompt-container" style="background-color:white">
+       <span>&gt;&nbsp;</span><input type="text" id="prompt" style="width:90%; height: 1.5em; margin: 5px;"></input>
+    </div>
+  </div>
   <div style="clear:both"></div>
 </div>
 <br/>
-<button type="submit">Yaaarrrrrrrrrrrrrrrrrrrrrrr!!!!</button><img id="break" src="break.png"/>
+<button id="run" type="submit">Yaaarrrrrrrrrrrrrrrrrrrrrrr!!!!</button><img id="break" src="break.png"/>
 </body>
 </html>
