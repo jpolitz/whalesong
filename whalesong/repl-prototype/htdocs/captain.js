@@ -1,3 +1,5 @@
+"use strict";
+
 function Node(name, taskSpec, outlinks, create) {
     return {
         name: name,
@@ -42,10 +44,12 @@ function TaskSpec(name, create, description, view) {
     };
 }
 
-function Review(by, content) {
+function Review(by, content, viewed) {
+  if (typeof viewed === 'undefined') { viewed = false; }
   return {
     by: by,
-    content: content
+    content: content,
+    viewed: viewed
   }
 }
 
@@ -64,14 +68,20 @@ var ddTaskSpec = TaskSpec("ddTaskSpec", function (work) {
    return Task(ddTaskSpec, false, work);
 }, "Data definitions for file system", function(userNode, task) {
     var d = jQuery("<div>");
+    var instructions = jQuery("<p>Instructions:  Write data definitions for files and directories where files have names and sizes and directories have a name and contain files and other directories.</p>");
+    instructions.css({
+      'width': '300px',
+      'padding': '1em'
+    });
     var t = jQuery("<textarea class='code'>");
-    var b = jQuery("<button>Submit</button>");
+    var repl = makeRepl({ initialWritable : t });
+    var b = jQuery("<button>Done with my data definitions</button>");
     b.click(function() {
       userNode.nodeTask.work = t.val();
       taskDone(userNode);
     });
     t.val(task.work);
-    d.append(t).append("<br/>").append(b);
+    d.append(instructions).append(repl).append("<br/>").append(b);
     return d;
 });
 
@@ -82,28 +92,49 @@ var exampleTaskSpec = TaskSpec("exampleTaskSpec",
       "Example data for file system",
       function(userNode, task) {
         var d = jQuery("<div>");
-        var textDefs = jQuery("<textarea class='code'>");
-        textDefs.attr('disabled', true);
-        var textWork = jQuery("<textarea class='code'>");
+        var textDefs = jQuery("<textarea>");
+        var textWork = jQuery("<textarea>");
         textWork.val(task.work);
-        var b = jQuery("<button>Submit</button>");
+        textDefs.val(userNode.user.nodes["dd"].nodeTask.work);
 
+        var repl = makeRepl({ initialUnwritable: textDefs,
+                              initialWritable: textWork });
+
+        var b = jQuery("<button>Done with my examples</button>");
+
+        var reviewsDiv = jQuery("<div>");
+        var reviewsHeader = jQuery("<h3>Reviews:</h3>");
         var reviewsList = jQuery("<ul>");
         task.reviews.forEach(function(review) {
+          review.viewed = true;
+
           var reviewItem = jQuery("<li>");
-          var reviewMsg = review.content.good ? "Looks good!" : "Not yet.";
-          reviewItem.append(jQuery("<span>(" + reviewMsg + ")</span>"));
+          var reviewColor = review.content.good ? '#cf9' : '#f99'; 
+          var reviewDiv = jQuery("<div>");
+          reviewDiv.css({
+            'background-color': reviewColor,
+            'width': '400px',
+            'padding': '1em'
+          });
           reviewItem.append(jQuery("<br/>"));
-          reviewItem.append(jQuery("<textarea disabled='disabled'>" + review.content.comments + "</textarea>"));
-          reviewsList.append(reviewItem);
+          var reviewText = jQuery("<textarea disabled='disabled'>" + review.content.comments + "</textarea>");
+          reviewItem.append(reviewText);
+          reviewText.css({
+            width: '350px',
+            height: (review.content.comments.split("\n").length + 2) + 'em'
+          });
+          reviewsList.append(reviewDiv.append(reviewItem));
         });
+        reviewsDiv.append(reviewsHeader).append(reviewsList);
 
         b.click(function() {
           userNode.nodeTask.work = textWork.val();
           taskDone(userNode);
         });
-        textDefs.val(userNode.user.nodes["dd"].nodeTask.work);
-        d.append(reviewsList).append(textDefs).append("<br/>").append(textWork).append("<br/>").append(b);
+        if(task.reviews.length > 0) {
+          d.append(reviewsDiv);
+        }
+        d.append(repl).append("<br/>").append(b);
         return d;
       });
 
@@ -119,9 +150,10 @@ var exampleReviewTaskSpec = TaskSpec("exampleReviewTaskSpec",
         var d = jQuery("<div>");
         var textToReview = jQuery("<textarea class='code'>");
         textToReview.val(task.work.definitions + "\n" + task.work.examples);
-        textToReview.attr('disabled', true);
         var textReview = jQuery("<textarea class='code'>");
         textReview.val(task.work.review.content.comments);
+
+        var repl = makeRepl({ initialUnwritable : textToReview });
 
         var okCheckbox = jQuery("<input type='checkbox'>");
         okCheckbox.prop('checked', task.work.review.content.good);
@@ -137,7 +169,7 @@ var exampleReviewTaskSpec = TaskSpec("exampleReviewTaskSpec",
           task.work.targetNode.nodeTask.reviews.push(Review(userNode.user, task.work.review.content));
           draw();
         });
-        d.append(textToReview).append("<br/>").append(textReview).append("<br/>").append(okDiv).append("<br/>").append(b);
+        d.append(repl).append("<br/>").append(textReview).append("<br/>").append(okDiv).append("<br/>").append(b);
         return d;
       });
 
@@ -217,8 +249,10 @@ user3.nodes[ddNode.name] = ddNode.create(user3);
 function draw() {
     jQuery("#users").html("Become: ");
     jQuery(".stage").removeClass("active");
+    jQuery(".stage").removeClass("current");
     jQuery(".stage").removeClass("completed");
     jQuery(".stage").removeClass("blocked");
+    jQuery(".stage").empty();
     allUsers.forEach(function (user) {
         if (user === currentUser) {
             jQuery("#users").append(jQuery("<button>").text(user.name + "*"));
@@ -247,6 +281,27 @@ function drawStages(userNode) {
         var domNode = task.spec.view(userNode, task);
         jQuery("#contents").empty().append(domNode);
     });
+    var reviews = userNode.nodeTask.reviews;
+    var unreadReviews = reviews.filter(function(r) { return !r.viewed; });
+    if (reviews.length > 0) {
+      var unread = unreadReviews.length;
+      var bgcolor = unread > 0 ? 'red' : 'darkgray';
+      var count = unread > 0 ? unread : reviews.length;
+      var reviewBang = jQuery("<div>" + count + "</div>");
+      reviewBang.css({
+        'font-weight': 'bold',
+        'position': 'relative',
+        'bottom': '0px',
+        'right': '0',
+        'margin': '5px',
+        'color': 'white',
+        'background-color': bgcolor,
+        'border': '1px solid black',
+        'width': '1em',
+        'text-align': 'center'
+      });
+      domNode.append(reviewBang);
+    }
     if (userNode.nodeTask.completed) {
         jQuery("#" + userNode.node.name).addClass("completed");
         userNode.node.outlinks.forEach(function (node) {
@@ -285,13 +340,13 @@ function initializeData() {
 
 jQuery(function() {
     draw();
-    reviewTest();
+    //reviewTest();
 });
 
 function reviewTest() {
   var $ = jQuery;
   $("#dd").click();
-  $("#contents .code").val("data File:\n  | file(name, size) end");
+  $("#contents .code").val("data File:\n  | file(name, size) \nend");
   $("#contents button").click();
   $("#example").click();
   $("#contents .code:enabled").val("file('passwd', 28)");
@@ -313,5 +368,195 @@ function reviewTest() {
   $('#contents button').click();
 
   switchUser(user1);
+}
+
+
+
+function makeRepl(options) {
+    var replContainer = jQuery("<div>");
+    var codeContainer = jQuery("<div>");
+    codeContainer.css({
+      'float': 'left',
+      'width': '45%',
+      'border': '1px solid black'
+    });
+    var hasProgram = false;
+    var initialCode = "";
+    if(options.hasOwnProperty('initialUnwritable')) {
+      var initialUnwritable = options.initialUnwritable;
+      initialUnwritable.css({
+        'width': '98%',
+        'background-color': "#eee",
+        'border': 'none',
+        'height': (initialUnwritable.val().split("\n").length + 2) + 'em'
+      });
+      initialUnwritable.attr('disabled', 'true');
+      codeContainer.append(initialUnwritable);
+      initialCode = initialUnwritable.val();
+    }
+    if(options.hasOwnProperty('initialWritable')) {
+      var initialWritable = options.initialWritable;
+      initialWritable.css({
+        'width': '98%',
+        'background-color': "white",
+        'border': 'none',
+        'height': '300px'
+      });
+      codeContainer.append(initialWritable);
+      hasProgram = true;
+    }
+    var prompt = jQuery("<input type='text' id='prompt'>");
+    var promptContainer = jQuery("<div id='prompt-container'>");
+    promptContainer.append("<span>&gt;&nbsp;</span>");
+    var interactions = jQuery("<div>");
+    var output = jQuery("<div id='output'>");
+    var breakButton = jQuery("<img id='break' src='break.png'>");
+//    var resetButton = jQuery("<button id='reset'>Swab the decks</button>");
+    var runButton = jQuery("<button id='run' type='submit'>RUN</button>");
+    var clearDiv = jQuery("<div class='clear'>");
+    var program = initialWritable;
+
+    prompt.css({
+      'width': '95%'
+    });
+
+    interactions.css({
+      'float': 'left',
+      'margin-left': '2em',
+      'width': '45%',
+      'border': '1px solid black'
+    });
+
+    runButton.css({
+      'float': 'right'
+    });
+    codeContainer.prepend(runButton);
+    replContainer.append(codeContainer);
+    promptContainer.append(prompt);
+    interactions.append(output).append(promptContainer);
+    replContainer.append(interactions).append(breakButton).append(clearDiv);
+
+    var write = function(dom) {
+        output.append(dom);
+        output.get(0).scrollTop = output.get(0).scrollHeight;
+    };
+
+    var clear = function() {
+      allowInput(prompt, true)();
+      if(hasProgram) { allowInput(program, false)(); }
+    };
+
+    var onBreak = function() { 
+        repl.requestBreak(clear);
+    };
+
+    
+    var allowInput = function(elt, clear) { return function() {
+        if (clear) {
+          elt.val('');
+        }
+        elt.removeAttr('disabled');
+        elt.css('background-color', 'white');
+        breakButton.hide();
+    } };
+
+    var onReset = function() { 
+        repl.reset(function() {
+                       output.empty();
+                       clear();
+                   });
+    };      
+       
+
+    var onExpressionEntered = function(srcElt) {
+        var src = srcElt.val();
+        write(jQuery('<span>&gt;&nbsp;</span>'));
+        write(jQuery('<span>').append(src));
+        write(jQuery('<br/>'));
+        jQuery(srcElt).val("");
+        srcElt.attr('disabled', 'true');
+        srcElt.css('background-color', '#eee');
+        breakButton.show();
+        repl.compileAndExecuteProgram('interactions',
+                                      src, 
+                                      clear,
+                                      onError);
+    };
+
+    var onProgramRun = function() {
+        var src = initialCode + "\n" + (hasProgram ? program.val() : "");
+        if(hasProgram) {
+          program.attr('disabled', 'true');
+          program.css('background-color', '#eee');
+        }
+        breakButton.show();
+        output.empty();
+        promptContainer.hide();
+        promptContainer.fadeIn(100);
+        repl.compileAndExecuteProgram('main', src, clear, onError);
+    };
+
+
+    var onError = function(err) {
+        if (err.message) {
+            write(jQuery('<span/>').css('color', 'red').append(err.message));
+            write(jQuery('<br/>'));
+        }
+        clear();
+    };
+    
+
+    breakButton.hide();
+    breakButton.click(onBreak);
+//    resetButton.click(onReset);
+    prompt.attr('disabled', 'true');
+    prompt.val('Please wait, initializing...');
+    prompt.keypress(function(e) {
+        if (e.which == 13 && !prompt.attr('disabled')) { 
+            onExpressionEntered(prompt);
+        }});
+
+    runButton.click(function () { onProgramRun(); });
+    if (hasProgram) {
+      program.keypress(function(e) {
+        if (e.which == 13 && e.shiftKey && !program.attr('disabled')) { 
+          onProgramRun();
+        }
+      });
+    }
+
+    var afterReplSetup = function(theRepl) {
+        repl = theRepl;
+        prompt.val('');
+        prompt.removeAttr('disabled');
+        prompt.css('background-color', 'white');
+    };
+
+    var repl;
+    plt.runtime.makeRepl({
+      prettyPrint: function(result) {
+        if (result.hasOwnProperty('_constructorName')) {
+          switch(result._constructorName.val) {
+            case 'p-num': 
+            case 'p-bool':
+            case 'p-str':
+              write(jQuery("<span>").append(result._fields[2]).append("<br/>"))
+              return true;       
+            case 'p-nothing':
+              return true;
+            default:
+              return false;
+          }
+        } else {
+          console.log(result);
+          return false;
+        }
+      },
+      write: write,
+      // TODO(joe): It's unfortunate that naming is by path here
+      language: "root/src/lang/pyret-lang-whalesong.rkt"
+    }, afterReplSetup);
+
+    return replContainer;
 }
 
