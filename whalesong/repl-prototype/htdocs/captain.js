@@ -173,6 +173,14 @@ var exampleReviewTaskSpec = TaskSpec("exampleReviewTaskSpec",
         return d;
       });
 
+var templateTaskSpec = TaskSpec("templateTaskSpec", function () {
+   return Task(templateTaskSpec, false, "");
+}, "Templates for file system", function(userNode, task) {
+    var d = jQuery("<div>");
+    d.append("not yet implemented");
+    return d;
+})
+
 
 var stubTaskSpec = TaskSpec("stubTaskSpec", function () {
    return Task(stubTaskSpec, false, "");
@@ -213,7 +221,7 @@ var testsNode = Node("tests", stubTaskSpec, [codeNode], function (user) {
 var contractNode = Node("contract", stubTaskSpec, [testsNode], function (user) {
     return UserNode(user, contractNode, stubTaskSpec.create(), [], false);
 });
-var templateNode = Node("template", stubTaskSpec, [contractNode], function (user) {
+var templateNode = Node("template", templateTaskSpec, [contractNode], function (user) {
     var eligible = allUsers.filter(function(u) {
       var notMe = u !== user;
       var completedExamples = u.nodes.hasOwnProperty("example") &&
@@ -233,7 +241,7 @@ var templateNode = Node("template", stubTaskSpec, [contractNode], function (user
         review: Review(user, { good: false, comments: "" })
       }));
     }
-    return UserNode(user, templateNode, stubTaskSpec.create(), reviewTasks, false);
+    return UserNode(user, templateNode, templateTaskSpec.create(), reviewTasks, false);
 });
 var exampleNode = Node("example", exampleTaskSpec, [templateNode], function (user) {
     return UserNode(user, exampleNode, exampleTaskSpec.create("# Example data:"), [], false);
@@ -270,7 +278,11 @@ function draw() {
 function drawStages(userNode) {
     var domNode = jQuery("#" + userNode.node.name);
     domNode.unbind();
+    domNode.removeClass('current');
+    domNode.empty();
     var task = userNode.nodeTask;
+    var desc = jQuery("<span>" + task.spec.description + "</code>");
+    domNode.append(desc);
     var blockingTasks = userNode.blockingTasks
         .filter(function (t) { return !t.completed; });
     jQuery("#contents").empty();
@@ -278,8 +290,10 @@ function drawStages(userNode) {
         if (blockingTasks.length !== 0) {
             task = blockingTasks[0];
         }
-        var domNode = task.spec.view(userNode, task);
-        jQuery("#contents").empty().append(domNode);
+        draw();
+        domNode.addClass('current');
+        var taskDom = task.spec.view(userNode, task);
+        jQuery("#contents").empty().append(taskDom);
     });
     var reviews = userNode.nodeTask.reviews;
     var unreadReviews = reviews.filter(function(r) { return !r.viewed; });
