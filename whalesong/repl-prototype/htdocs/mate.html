@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="collects/runtime.js"></script>
+<script src="collects/library.js"></script>
+<script src="easyXDM-min.js"></script>
+<script src="repl.js"></script>
+<!-- <script src="index.js"></script> -->
+<script src="mate.js"></script>
+<style>
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+textarea {
+  font-family: monospace;
+}
+textarea.code {
+width: 400px;
+height: 300px;
+}
+#users {
+margin: 10px;
+}
+.drill {
+float: left;
+width: 70px;
+height: 70px;
+padding: 5px;
+margin: 5px;
+border: 2px dotted black;
+border-radius: 5px;
+cursor: pointer;
+}
+.drill.active {
+  border: 2px solid black;
+// background: -moz-radial-gradient(center, ellipse cover,  #cdeb8e 0%, #a5c956 100%); /* FF3.6+ */
+// background: -webkit-radial-gradient(center, ellipse cover,  #cdeb8e 0%,#a5c956 100%); /* Chrome10+,Safari5.1+ */
+}
+.drill.completed {
+  border: 2px solid black;
+ background: -moz-radial-gradient(center, ellipse cover,  #cdeb8e 0%, #a5c956 100%); /* FF3.6+ */
+ background: -webkit-radial-gradient(center, ellipse cover,  #cdeb8e 0%,#a5c956 100%); /* Chrome10+,Safari5.1+ */
+}
+.drill.current {
+  font-weight: bold;
+}
+h1 {
+  padding-left: 10px;
+  padding-top: 10px;
+  float: left;
+  font-family: monospace;
+  font-size: 18pt;
+  font-weight: bold;
+  color: #eee;
+}
+.logo {
+  float: left;
+  height: 40px;
+}
+div.clear {
+  clear: both;
+}
+div.header {
+  padding-left: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background-color: #3399ff;
+}
+div#users {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+span.output {
+padding: 5px;
+background-color: #eee;
+}
+</style>
+</head>
+<body>
+  <div class="header">
+    <img class="logo" src="pyret-logo.png"></img>
+    <h1>CAPTAIN TEACH</h1>
+    <div class="clear"></div>
+  </div>
+
+  <div id="users">Become: </div>
+  
+
+  <div id="drills"></div>
+
+  <div class="clear"></div>
+
+  <div id="contents"></div>
+  
+</body>
+</html>
