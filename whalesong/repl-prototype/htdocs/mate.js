@@ -164,8 +164,11 @@ function drawDrills(drills, current) {
         var maxFail = drill.drill.failCount;
         var failedMessage = maxFail > 0 ?
             "<br/>(" + failed.length + "/" + maxFail + " failed)" : "";
-        drillDiv.html(drill.drill.title + "<br/>" + done.length + "/" +
-                      drill.exercises.length + failedMessage);
+        drillDiv.append(drill.drill.title + "<br/>" + done.length + "/" +
+                      drill.exercises.length + "<br/>");
+        for(var i = failed.length; i < maxFail; i++) {
+            drillDiv.append("<img src='heart.png'/>");
+        }
 
         if (done.length == drill.exercises.length) {
             drillDiv.addClass("completed");
