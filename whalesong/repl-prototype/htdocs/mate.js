@@ -218,7 +218,7 @@ function mathBinOpExerciseSpec(pyretOp, jsOp, jsInverseOp) {
                                (n2 + "") + (n1 + ""), jsInverseOp(n1,n2) + ""]},
                    false, false);
 }, function (userDrill, exercise) {
-    var text = jQuery("<textarea>");
+    var text = jQuery("<textarea class='evaluator'>");
     text.val(exercise.problem.expression);
     var output = jQuery("<span class='output'>");
     var evaluator = makeEvaluator(text, output);
