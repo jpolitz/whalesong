@@ -74,13 +74,13 @@ var ddTaskSpec = TaskSpec("ddTaskSpec", function (work) {
       'padding': '1em'
     });
     var t = jQuery("<textarea class='code'>");
+    t.val(task.work);
     var repl = makeRepl({ initialWritable : t });
     var b = jQuery("<button>Done with my data definitions</button>");
     b.click(function() {
       userNode.nodeTask.work = t.val();
       taskDone(userNode);
     });
-    t.val(task.work);
     d.append(instructions).append(repl).append("<br/>").append(b);
     return d;
 });
@@ -396,27 +396,24 @@ function makeRepl(options) {
     });
     var hasProgram = false;
     var initialCode = "";
+    var writableCM;
     if(options.hasOwnProperty('initialUnwritable')) {
       var initialUnwritable = options.initialUnwritable;
-      initialUnwritable.css({
-        'width': '98%',
-        'background-color': "#eee",
-        'border': 'none',
-        'height': (initialUnwritable.val().split("\n").length + 2) + 'em'
-      });
       initialUnwritable.attr('disabled', 'true');
       codeContainer.append(initialUnwritable);
       initialCode = initialUnwritable.val();
+      CodeMirror.fromTextArea(initialUnwritable[0]);
     }
     if(options.hasOwnProperty('initialWritable')) {
       var initialWritable = options.initialWritable;
-      initialWritable.css({
-        'width': '98%',
-        'background-color': "white",
-        'border': 'none',
-        'height': '300px'
-      });
       codeContainer.append(initialWritable);
+      writableCM = CodeMirror.fromTextArea(initialWritable[0], {
+            extraKeys: {
+              "Shift-Enter": function(cm) {
+                onProgramRun();
+              }
+            }
+          });
       hasProgram = true;
     }
     var prompt = jQuery("<input type='text' id='prompt'>");
@@ -429,6 +426,7 @@ function makeRepl(options) {
     var runButton = jQuery("<button id='run' type='submit'>RUN</button>");
     var clearDiv = jQuery("<div class='clear'>");
     var program = initialWritable;
+    window.programCM = writableCM;
 
     prompt.css({
       'width': '95%'
@@ -449,6 +447,8 @@ function makeRepl(options) {
     promptContainer.append(prompt);
     interactions.append(output).append(promptContainer);
     replContainer.append(interactions).append(breakButton).append(clearDiv);
+
+    programCM.refresh();
 
     var write = function(dom) {
         output.append(dom);
@@ -498,7 +498,7 @@ function makeRepl(options) {
     };
 
     var onProgramRun = function() {
-        var src = initialCode + "\n" + (hasProgram ? program.val() : "");
+        var src = initialCode + "\n" + (hasProgram ? programCM.getValue() : "");
         if(hasProgram) {
           program.attr('disabled', 'true');
           program.css('background-color', '#eee');
