@@ -1,6 +1,12 @@
 #lang racket/base
 
-(provide repl-compile)
+(provide whalesong-compile)
+(require
+ "../parser/parse-bytecode.rkt"
+ (only-in "../compiler/compiler.rkt" compile-for-repl)
+ "../js-assembler/assemble.rkt"       
+ racket/match
+ (only-in pyret pyret-read-syntax))
 
 (define this-namespace (make-base-empty-namespace))
 
@@ -42,6 +48,35 @@
 (define (repl-compile body #:lang [language-module-path 'racket/base])
   (parameterize ([current-namespace (make-repl-namespace language-module-path)])
     (compile body)))
+
+
+(define (repl-read-syntax _ in)
+  (pyret-read-syntax "server" in))
+
+(define (repl-reader-for language)
+  (match language
+    ['pyret repl-read-syntax]
+    ['racket/base read-syntax]))
+
+;; Compiles code from str
+(define (whalesong-compile source-name src #:lang [lang 'racket/base])
+  (define ip (open-input-string src))
+  (port-count-lines! ip)
+  (define assembled-codes
+    (let loop () 
+      (define sexp ((repl-reader-for lang) source-name ip))
+      (cond [(eof-object? sexp)
+             '()]
+            [else
+             (define raw-bytecode (repl-compile sexp #:lang lang))
+             (define op (open-output-bytes))
+             (write raw-bytecode op)
+             (define whalesong-bytecode (parse-bytecode (open-input-bytes (get-output-bytes op))))
+             (define compiled-bytecode (compile-for-repl whalesong-bytecode))
+             (define assembled-op (open-output-string))
+             (define assembled (assemble/write-invoke compiled-bytecode assembled-op 'with-preemption))
+             (cons (get-output-string assembled-op) (loop))])))
+  assembled-codes)
 
 
 

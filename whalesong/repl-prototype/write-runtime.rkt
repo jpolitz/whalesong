@@ -11,6 +11,7 @@
 (provide write-repl-runtime-files)
 
 (define-runtime-path collects-path (build-path "htdocs" "collects"))
+(define current-output-path (make-parameter collects-path))
 
 
 ;; write-repl-runtime-files: -> void
@@ -18,8 +19,8 @@
 ;; Includes the basic runtime as well as the language.
 (define (write-repl-runtime-files language-path)
 
-  (unless (directory-exists? collects-path)
-    (make-directory collects-path))
+  (unless (directory-exists? (current-output-path))
+    (make-directory (current-output-path)))
   
   
   (define written-js-paths '())
@@ -30,7 +31,7 @@
   (define make-output-js-filename
     (lambda (module-name)
       (define result
-        (build-path collects-path
+        (build-path (current-output-path)
                     (string-append
                      (regexp-replace #rx"[.](rkt|ss)$" (symbol->string module-name) "")
                      ".js")))
@@ -68,6 +69,8 @@
     #:once-each
     ("--root-dir" path "Use the given root directory"
      (current-root-path (simple-form-path path)))
+    ("--output-dir" path "Use the given output directory"
+     (current-output-path (simple-form-path (build-path collects-path path))))
     ("--language-path" path "Use the given path as the language context for the Whalesong browser runtime"
       (write-repl-runtime-files (simple-form-path path)))))
 

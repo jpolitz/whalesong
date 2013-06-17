@@ -9,15 +9,8 @@
          racket/pretty
          web-server/servlet-env
          web-server/servlet
-         "repl-compile.rkt"         
-         "modularize-input-port.rkt"
+         "repl-compile.rkt"
          "../parameters.rkt"
-         "../make/make-structs.rkt"
-         "../js-assembler/package.rkt"
-         "../parser/parse-bytecode.rkt"
-         "../compiler/compiler.rkt"
-         "../js-assembler/assemble.rkt"
-         (only-in pyret pyret-read-syntax)
          (for-syntax racket/base))
 
 (provide start-server)
@@ -29,10 +22,6 @@
   ;'whalesong/wescheme/lang/semantics
   ;'whalesong/simply-scheme/semantics
   )
-
-(define (repl-read-syntax _ in)
-  (pyret-read-syntax "server" in))
-
 
 ;; make-port-response: (values response/incremental output-port)
 ;; Creates a response that's coupled to an output-port: whatever you
@@ -80,9 +69,9 @@
   (define-values (response op) 
     (make-port-response #:mime-type #"text/json" #:with-cors? #t))
   (define source-name (lookup-binding req 'name))
-  (printf "Name: ~a\n" source-name)
   (define mname (lookup-binding req 'mname))
   (define lang (lookup-binding req 'lang))
+  (printf "The language is: ~a\n" lang)
   (define src (extract-binding/single 'src (request-bindings req)))
   (define as-mod? (match (extract-bindings 'm (request-bindings req))
                     [(list (or "t" "true"))
@@ -93,47 +82,10 @@
                                (write-json (hash 'type "error"
                                                  'message (exn-message exn))
                                            op))])
-    (cond [(not as-mod?)
-           (define ip (open-input-string src))
-           (port-count-lines! ip)
-           (define assembled-codes
-             (let loop () 
-               (define sexp (repl-read-syntax source-name ip))
-               (pretty-print sexp)
-               (cond [(eof-object? sexp)
-                      '()]
-                     [else
-                      (define raw-bytecode (repl-compile sexp #:lang language))
-                      (define op (open-output-bytes))
-                      (write raw-bytecode op)
-                      (define whalesong-bytecode (parse-bytecode (open-input-bytes (get-output-bytes op))))
-                      #;(pretty-print whalesong-bytecode)
-                      (define compiled-bytecode (compile-for-repl whalesong-bytecode))
-                      #;(pretty-print compiled-bytecode)
-                      (define assembled-op (open-output-string))
-                      (define assembled (assemble/write-invoke compiled-bytecode assembled-op 'with-preemption))
-                      (cons (get-output-string assembled-op) (loop))])))
-           #;(printf "assembled codes ~a\n" assembled-codes)
-           (write-json (hash 'type "repl"
+    (define assembled-codes (whalesong-compile source-name src #:lang language))
+    (write-json (hash 'type "repl"
                              'compiledCodes assembled-codes)
-                       op)]
-          #;[else
-           (define program-input-port
-             (let* ([ip (open-input-string src)])
-               (port-count-lines! ip)
-               (modularize-input-port #:module-name (string->symbol mname)
-                                      #:input-port ip
-                                      #:semantics-module 'whalesong)))
-           (define program-output-port (open-output-string))
-           (package (SexpSource (parameterize ([read-accept-reader #t])
-                                  (read-syntax source-name program-input-port)))
-                    #:should-follow-children? (lambda (src) #f)
-                    #:output-port  program-output-port)
-           (write-json (hash 'type "module"
-                             'module-name (string->symbol mname)
-                             'provides '()  ;; FIXME!
-                             'compiledModule (get-output-string program-output-port))
-                       op)]))
+                       op))
   (close-output-port op)
   response)
   
@@ -162,3 +114,4 @@
           (current-port (string->number p))]))
   (sync (start-server #:port (current-port))))
   
+
