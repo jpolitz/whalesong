@@ -4,4 +4,5 @@ pyret:
 	raco make server.rkt
 
 run:
-	racket server.rkt
+	racket server.rkt --root-dir "../../../.."
+

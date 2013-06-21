@@ -51,11 +51,11 @@
 
 
 (define (repl-read-syntax _ in)
-  (pyret-read-syntax "server" in))
+  (pyret-read-syntax _ in))
 
 (define (repl-reader-for language)
   (match language
-    ['pyret repl-read-syntax]
+    ['pyret/lang/pyret-lang-whalesong repl-read-syntax]
     ['racket/base read-syntax]))
 
 ;; Compiles code from str

@@ -18,7 +18,7 @@
 (define-runtime-path htdocs (build-path "htdocs"))
 
 (define language 
-  'pyret
+  'pyret/lang/pyret-lang-whalesong
   ;'whalesong/wescheme/lang/semantics
   ;'whalesong/simply-scheme/semantics
   )

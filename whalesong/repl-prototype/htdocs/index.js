@@ -60,7 +60,7 @@ jQuery(document).ready(function() {
 
     var onError = function(err) {
         if (err.message) {
-            write(jQuery('<span/>').css('color', 'red').append(err.message));
+            write(jQuery('<span/>').css('color', 'red').text(err.message));
             write(jQuery('<br/>'));
         }
         clear();

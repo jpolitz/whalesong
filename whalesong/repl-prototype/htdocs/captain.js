@@ -75,10 +75,13 @@ var ddTaskSpec = TaskSpec("ddTaskSpec", function (work) {
     });
     var t = jQuery("<textarea class='code'>");
     t.val(task.work);
-    var repl = makeRepl({ initialWritable : t });
+    var replArr = makeRepl({ initialWritable : t });
+        var repl = replArr[1];
+        var t = replArr[0];
     var b = jQuery("<button>Done with my data definitions</button>");
     b.click(function() {
-      userNode.nodeTask.work = t.val();
+    console.log(repl);
+      userNode.nodeTask.work = t.getValue();
       taskDone(userNode);
     });
     d.append(instructions).append(repl).append("<br/>").append(b);
@@ -97,8 +100,10 @@ var exampleTaskSpec = TaskSpec("exampleTaskSpec",
         textWork.val(task.work);
         textDefs.val(userNode.user.nodes["dd"].nodeTask.work);
 
-        var repl = makeRepl({ initialUnwritable: textDefs,
+        var replArr = makeRepl({ initialUnwritable: textDefs,
                               initialWritable: textWork });
+        var repl = replArr[1];
+        var textWork = replArr[0];
 
         var b = jQuery("<button>Done with my examples</button>");
 
@@ -128,7 +133,7 @@ var exampleTaskSpec = TaskSpec("exampleTaskSpec",
         reviewsDiv.append(reviewsHeader).append(reviewsList);
 
         b.click(function() {
-          userNode.nodeTask.work = textWork.val();
+          userNode.nodeTask.work = textWork.getValue();
           taskDone(userNode);
         });
         if(task.reviews.length > 0) {
@@ -149,6 +154,7 @@ var exampleReviewTaskSpec = TaskSpec("exampleReviewTaskSpec",
       function(userNode, task) {
         var d = jQuery("<div>");
         var textToReview = jQuery("<textarea class='code'>");
+        console.log(task);
         textToReview.val(task.work.definitions + "\n" + task.work.examples);
         var textReview = jQuery("<textarea class='code'>");
         textReview.val(task.work.review.content.comments);
@@ -428,6 +434,7 @@ function makeRepl(options) {
     var program = initialWritable;
     window.programCM = writableCM;
 
+
     prompt.css({
       'width': '95%'
     });
@@ -448,7 +455,9 @@ function makeRepl(options) {
     interactions.append(output).append(promptContainer);
     replContainer.append(interactions).append(breakButton).append(clearDiv);
 
-    programCM.refresh();
+    if(window.programCM) {
+      window.programCM.refresh();
+    }
 
     var write = function(dom) {
         output.append(dom);
@@ -571,6 +580,6 @@ function makeRepl(options) {
       language: "root/src/lang/pyret-lang-whalesong.rkt"
     }, afterReplSetup);
 
-    return replContainer;
+    return [writableCM, replContainer];
 }
 

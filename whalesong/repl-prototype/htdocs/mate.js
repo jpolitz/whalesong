@@ -212,7 +212,7 @@ function mathBinOpExerciseSpec(pyretOp, jsOp, jsInverseOp) {
     var n1 = Math.floor(Math.random() * 10+1);
     var n2 = Math.floor(Math.random() * 10+1);
     return Exercise(spec,
-                    {expression: n1 + "."+pyretOp+"(" + n2 + ")",
+                    {expression: n1 + " " + pyretOp+" " + n2 + "",
                      answer: jsOp(n1,n2) + "",
                      choices: [n1+"",jsOp(n1,n2) + "" , (n1 + "") + (n2 + ""),
                                (n2 + "") + (n1 + ""), jsInverseOp(n1,n2) + ""]},
@@ -258,7 +258,7 @@ function mathBinOpExerciseSpec(pyretOp, jsOp, jsInverseOp) {
     return spec;
 }
 
-var plusExpressionExerciseSpec = mathBinOpExerciseSpec("plus",
+var plusExpressionExerciseSpec = mathBinOpExerciseSpec("+",
                                                        function(a,b) {return a+b;},
                                                        function(a,b) {return a-b;}
                                                       );
@@ -270,7 +270,7 @@ var plusExpressionDrill = Drill("Addition Exercises",
                                  plusExpressionExerciseSpec,
                                  plusExpressionExerciseSpec], 2);
 
-var minusExpressionExerciseSpec = mathBinOpExerciseSpec("minus",
+var minusExpressionExerciseSpec = mathBinOpExerciseSpec("-",
                                                        function(a,b) {return a-b;},
                                                        function(a,b) {return a+b;}
                                                       );
