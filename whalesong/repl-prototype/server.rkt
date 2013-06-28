@@ -96,6 +96,8 @@
                       #:listen-ip [listen-ip "127.0.0.1"])
     (thread (lambda ()
               (printf "starting web server on port ~s\n" port)
+              (when (not listen-ip)
+                (printf "listening on all addresses \n"))
               (serve/servlet start 
                              #:listen-ip listen-ip
                              #:servlet-path "/compile"
@@ -105,13 +107,18 @@
 
 (module+ main
   (define current-port (make-parameter 8080))
+  (define current-listen-ip (make-parameter "127.0.0.1"))
   (require racket/cmdline)
   (void (command-line
          #:once-each 
          [("--root-dir") root "Root directory to look for included files, default (current-directory)"
           (current-root-path (simple-form-path root))]
          [("-p" "--port") p "Port (default 8000)" 
-          (current-port (string->number p))]))
-  (sync (start-server #:port (current-port))))
+          (current-port (string->number p))]
+         [("-l" "--listen")
+          "Listen on all ips (defaults to just 127.0.0.1)" 
+          (current-listen-ip #f)]))
+  (sync (start-server #:port (current-port)
+                      #:listen-ip (current-listen-ip))))
   
 
