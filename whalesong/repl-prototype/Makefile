@@ -6,3 +6,5 @@ pyret:
 run:
 	racket server.rkt --root-dir "../../../.."
 
+run-production:
+	racket server.rkt --root-dir "../../../.." --listen
