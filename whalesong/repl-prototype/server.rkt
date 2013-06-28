@@ -60,8 +60,8 @@
 
 
 (define (lookup-binding req id)
-  (if (exists-binding? 'id (request-bindings req))
-      (extract-binding/single 'id (request-bindings req))
+  (if (exists-binding? id (request-bindings req))
+      (extract-binding/single id (request-bindings req))
       #f))
   
 
@@ -71,7 +71,7 @@
   (define source-name (lookup-binding req 'name))
   (define mname (lookup-binding req 'mname))
   (define lang (lookup-binding req 'lang))
-  (printf "The language is: ~a\n" lang)
+  (define options (string->jsexpr (extract-binding/single 'options (request-bindings req))))
   (define src (extract-binding/single 'src (request-bindings req)))
   (define as-mod? (match (extract-bindings 'm (request-bindings req))
                     [(list (or "t" "true"))
@@ -82,7 +82,7 @@
                                (write-json (hash 'type "error"
                                                  'message (exn-message exn))
                                            op))])
-    (define assembled-codes (whalesong-compile source-name src #:lang language))
+    (define assembled-codes (whalesong-compile source-name src #:lang language #:options options))
     (write-json (hash 'type "repl"
                              'compiledCodes assembled-codes)
                        op))

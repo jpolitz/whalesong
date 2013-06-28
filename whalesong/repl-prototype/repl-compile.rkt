@@ -50,21 +50,21 @@
     (compile body)))
 
 
-(define (repl-read-syntax _ in)
-  (pyret-read-syntax _ in))
-
-(define (repl-reader-for language)
+(define (repl-reader-for language options)
   (match language
-    ['pyret/lang/pyret-lang-whalesong repl-read-syntax]
+    ['pyret/lang/pyret-lang-whalesong
+     (define check-mode (hash-ref options 'check #f))
+     (lambda (src in)
+      (pyret-read-syntax src in #:check check-mode))]
     ['racket/base read-syntax]))
 
 ;; Compiles code from str
-(define (whalesong-compile source-name src #:lang [lang 'racket/base])
+(define (whalesong-compile source-name src #:lang [lang 'racket/base] #:options [options (hash)])
   (define ip (open-input-string src))
   (port-count-lines! ip)
   (define assembled-codes
     (let loop () 
-      (define sexp ((repl-reader-for lang) source-name ip))
+      (define sexp ((repl-reader-for lang options) source-name ip))
       (cond [(eof-object? sexp)
              '()]
             [else

@@ -111,18 +111,18 @@
                 afterSetup(that);
             },
             function(err) {
-                // Nothing should work if we can't get this to work.
-                alert("uh oh!: language could not be loaded.");
+                console.error("Failed to load language: ", err);
             });
     };
 
 
-    Repl.prototype.compileAndExecuteProgram = function(programName, code,
+    Repl.prototype.compileAndExecuteProgram = function(programName, code, options,
 					               onDone, onDoneError) {
         var that = this;
         this.compileProgram(
             programName, 
             code,
+            options,
             function(compiledCode) {
                 that.executeCompiledProgram(compiledCode,
                                             onDone,
@@ -132,12 +132,13 @@
     };
 
 
-    Repl.prototype.compileProgram = function(programName, code,
+    Repl.prototype.compileProgram = function(programName, code, options,
                                              onDone, onDoneError) {
         var that = this;
         getXhr(this).replCompile(
             programName, 
             code,
+            options,
             onDone, 
             function(err) {
                 // If we get a 503, try again.
