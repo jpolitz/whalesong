@@ -69,8 +69,12 @@
     #:once-each
     ("--root-dir" path "Use the given root directory"
      (current-root-path (simple-form-path path)))
+    ("--root-collection" path "Use the given collection's directory as the root dir"
+     (current-root-path (simple-form-path (collection-path path))))
     ("--output-dir" path "Use the given output directory"
      (current-output-path (simple-form-path (build-path collects-path path))))
+    ("--language-collection" collection path "Use the given collection and path as the language for the Whalesong browser runtime"
+      (write-repl-runtime-files (simple-form-path (collection-file-path path collection))))
     ("--language-path" path "Use the given path as the language context for the Whalesong browser runtime"
       (write-repl-runtime-files (simple-form-path path)))))
 

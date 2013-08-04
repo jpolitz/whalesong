@@ -84,7 +84,7 @@
                                            op))])
     (define assembled-codes (whalesong-compile source-name src #:lang language #:options options))
     (write-json (hash 'type "repl"
-                             'compiledCodes assembled-codes)
+                      'compiledCodes assembled-codes)
                        op))
   (close-output-port op)
   response)
@@ -113,6 +113,8 @@
          #:once-each 
          [("--root-dir") root "Root directory to look for included files, default (current-directory)"
           (current-root-path (simple-form-path root))]
+         ["--root-collection" path "Use the given collection's directory as the root dir"
+          (current-root-path (simple-form-path (collection-path path)))]
          [("-p" "--port") p "Port (default 8000)" 
           (current-port (string->number p))]
          [("-l" "--listen")

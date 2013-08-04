@@ -1,10 +1,10 @@
 pyret:
 	raco make write-runtime.rkt
-	racket write-runtime.rkt --root-dir "../../../.." --language-path "../../../../src/lang/pyret-lang-whalesong.rkt"
+	racket write-runtime.rkt --root-collection pyret --language-collection pyret lang/pyret-lang-whalesong.rkt
 	raco make server.rkt
 
 run:
-	racket server.rkt --root-dir "../../../.."
+	racket server.rkt --root-collection pyret
 
 run-production:
-	racket server.rkt --root-dir "../../../.." --listen
+	racket server.rkt --root-collection pyret --listen
