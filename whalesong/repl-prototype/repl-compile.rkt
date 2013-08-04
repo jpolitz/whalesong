@@ -53,7 +53,9 @@
 (define (repl-reader-for language options)
   (match language
     ['pyret/lang/pyret-lang-whalesong
-     (define check-mode (hash-ref options 'check #f))
+     (define check-mode (if (hash? options)
+                            (hash-ref options 'check #f)
+                            #f))
      (lambda (src in)
       (pyret-read-syntax src in #:check check-mode))]
     ['racket/base read-syntax]))
