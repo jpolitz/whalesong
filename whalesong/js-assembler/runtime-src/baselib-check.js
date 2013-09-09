@@ -166,7 +166,7 @@
             }
             else {
                 expectedTypeName = baselib.format.format('natural between ~a and ~a', [a, b]);
-                return baselib.exceptions.raiseArgumentTypeError(m, 
+                return baselib.exceptions.raiseArgumentTypeError(M, 
                                                                  callerName,
                                                                  expectedTypeName,
                                                                  index,
