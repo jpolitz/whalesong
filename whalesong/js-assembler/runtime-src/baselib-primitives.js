@@ -1590,9 +1590,7 @@
         1,
         function(M) {
             var val = checkChar(M, 'char-whitespace?', 0).val;
-            var matches = val.match(whitespaceRegexp ? true : false);
-            if(matches === null) { return false; }
-            else { return true; }
+            return val.match(whitespaceRegexp) ? true : false;
       });
 
 
