@@ -1,1 +1,0 @@
-("5.3" ("a5c0f1ec32c4779db07d9f8819e80eac1e2a8ae7" . "65ffe5d99f081938dad4779ffa97d11a71a8163d") #"/Users/schanzer/Documents/Bootstrap/Development/whalesong/whalesong/image/private/../../lang/base.rkt" (collects #"racket" #"base.rkt") (collects #"s-exp" #"lang" #"reader.rkt"))
