@@ -586,6 +586,27 @@ EXPORTS['empty-scene'] =
                                   true);
 	});
 
+EXPORTS['put-image'] =
+makePrimitiveProcedure(
+                       'put-image',
+                       4,
+                       function(MACHINE) {
+                       var picture = checkImage(MACHINE, "put-image", 0);
+                       var x = checkReal(MACHINE, "put-image", 1);
+                       var y = checkReal(MACHINE, "put-image", 2);
+                       var background = checkImageOrScene(MACHINE, "put-image", 3);
+                       if (isScene(background)) {
+                       return background.add(picture, jsnums.toFixnum(x), jsnums.toFixnum(y));
+                       } else {
+                       var newScene = makeSceneImage(background.getWidth(),
+                                                     background.getHeight(),
+                                                     [],
+                                                     false);
+                       newScene = newScene.add(background, background.getWidth()/2, background.getHeight()/2);
+                       newScene = newScene.add(picture, jsnums.toFixnum(x), background.getHeight() - jsnums.toFixnum(y));
+                       return newScene;
+                       }
+                       });
 
 
 EXPORTS['place-image'] = 

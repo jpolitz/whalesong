@@ -15,6 +15,7 @@
          above
          above/align
          empty-scene
+         put-image
          place-image
          place-image/align
          rotate
@@ -100,6 +101,7 @@
   above
   above/align
   empty-scene
+  put-image
   place-image
   place-image/align
   rotate
