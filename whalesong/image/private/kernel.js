@@ -507,10 +507,7 @@ FileVideo.prototype.render = function(ctx, x, y) {
     ctx.drawImage(this.video, x, y);
 };
 FileVideo.prototype.isEqual = function(other, aUnionFind) {
-  if (!(other instanceof FileVideo)) {
-    return BaseImage.prototype.isEqual.call(this, other, aUnionFind);
-  }
-  return (this.src === other.src);
+  return (other instanceof FileVideo) && (this.src === other.src);
 };
 
 //////////////////////////////////////////////////////////////////////
