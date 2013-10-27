@@ -375,8 +375,8 @@ var FileImage = function(src, rawImage) {
   if (rawImage && rawImage.complete) {
     this.img = rawImage;
     this.isLoaded = true;
-    this.pinholeX = self.img.width / 2;
-    this.pinholeY = self.img.height / 2;
+    self.width = self.img.width;
+    self.height = self.img.height;
   } else {
     // fixme: we may want to do something blocking here for
     // onload, since we don't know at this time what the file size
@@ -385,8 +385,8 @@ var FileImage = function(src, rawImage) {
     this.img = new Image();
     this.img.onload = function() {
 	    self.isLoaded = true;
-	    self.pinholeX = self.img.width / 2;
-	    self.pinholeY = self.img.height / 2;
+      self.width = self.img.width;
+      self.height = self.img.height;
     };
     this.img.onerror = function(e) {
 	    self.img.onerror = "";
@@ -449,10 +449,10 @@ FileImage.prototype.toDomNode = function(params) {
 };
 
 FileImage.prototype.isEqual = function(other, aUnionFind) {
-  return (other instanceof FileImage &&
-          this.pinholeX == other.pinholeX &&
-          this.pinholeY == other.pinholeY &&
-          this.src == other.src);
+  if (!(other instanceof FileImage)) {
+    return BaseImage.prototype.isEqual.call(this, other, aUnionFind);
+  }
+  return (this.src === other.src);
 };
 
 //////////////////////////////////////////////////////////////////////

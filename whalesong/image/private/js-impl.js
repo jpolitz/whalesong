@@ -815,8 +815,9 @@ EXPORTS['scene+line'] =
 	    var line = makeLineImage(jsnums.toFixnum(x2-x1),
                                jsnums.toFixnum(y2-y1),
                                c,
-                               false);
-	    // add the line to scene, offset by the original amount
+                               false),
+      leftMost = Math.min(x1,x2),
+      topMost = Math.min(y1,y2);
       return newScene.add(line, line.getWidth()/2+leftMost, line.getHeight()/2+topMost);
     });
 
