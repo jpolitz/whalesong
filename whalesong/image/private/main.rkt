@@ -66,6 +66,6 @@
                     side-count?
                     step-count?
                     image?
-
+                    image=?
                     name->color
                     ))
