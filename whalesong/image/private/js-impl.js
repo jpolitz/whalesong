@@ -8,7 +8,7 @@ var checkSymbolOrString = plt.baselib.check.checkSymbolOrString;
 
 var isString = plt.baselib.strings.isString;
 var isSymbol = plt.baselib.symbols.isSymbol;
-
+var isEqual = plt.baselib.equality.equals;
 
 var isFontFamily = function(x){
     return ((isString(x) || isSymbol(x)) &&
@@ -239,14 +239,14 @@ EXPORTS['image?'] =
         });
 
 EXPORTS['image=?'] =
-makePrimitiveProcedure(
-                       'image=?',
-                       2,
-                       function(MACHINE) {
-                       var img1 = checkImage(MACHINE, 'image=?', 0);
-                       var img2 = checkImage(MACHINE, 'image=?', 1);
-                       return img1.isEqual(img2);
-                       });
+    makePrimitiveProcedure(
+       'image=?',
+       2,
+       function(MACHINE) {
+         var img1 = checkImage(MACHINE, 'image=?', 0);
+         var img2 = checkImage(MACHINE, 'image=?', 1);
+         return isEqual(img1, img2);
+       });
 
 
 EXPORTS['text'] =
@@ -261,7 +261,7 @@ EXPORTS['text'] =
 	    return makeTextImage(aString.toString(), 
                                  jsnums.toFixnum(aSize),
                                  aColor,
-				 "normal",
+                                 "normal",
                                  "Optimer",
                                  "",
                                  "",
@@ -283,13 +283,13 @@ EXPORTS['text/font'] =
 	    var aWeight = checkFontWeight(MACHINE, "text/font", 6);
 	    var aUnderline = checkBoolean(MACHINE, "text/font", 7);
 	    return makeTextImage(aString.toString(),
-                                 jsnums.toFixnum(aSize),
-                                 aColor,
-				 aFace.toString(),
-                                 aFamily.toString(),
-                                 aStyle.toString(),
-				 aWeight.toString(),
-                                 aUnderline);
+                           jsnums.toFixnum(aSize),
+                           aColor,
+                           aFace.toString(),
+                           aFamily.toString(),
+                           aStyle.toString(),
+                           aWeight.toString(),
+                           aUnderline);
         });
 
 

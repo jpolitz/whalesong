@@ -66,11 +66,11 @@
 
 ;(check-expect (color? (make-color 3 4 5)))
 
-(check-expect (color-red (make-color 3 4 5)) 3)
-(check-expect (color-green (make-color 3 4 5)) 4)
-(check-expect (color-blue (make-color 3 4 5)) 5)
+;(check-expect (color-red (make-color 3 4 5)) 3)
+;(check-expect (color-green (make-color 3 4 5)) 4)
+;(check-expect (color-blue (make-color 3 4 5)) 5)
 
-(check-expect (image? (empty-scene 20 50)) true)
+(check-expect (image? (empty-scene 20 50)) #t)
 
 (check-expect (image? (place-image (circle 50 'solid 'blue)
                                    50
@@ -693,11 +693,15 @@ Australia2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; IMAGE EQUALITY
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+"checking a scene against itself"
+(check-expect (image=? (empty-scene 20 50) (empty-scene 20 50)) 
+              #t)
+
+
 "checking a circle against a rectangle"
 (check-expect (image=? (circle 50 "solid" "blue")
                        (rectangle 20 30 "outline" "turquoise"))
               #f)
-(check-expect (image=? (empty-scene 20 50) (empty-scene 20 50)) true)
 
 "checking a circle against a different one"
 (check-expect (image=? (circle 50 "solid" "blue")

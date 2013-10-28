@@ -12,6 +12,7 @@ var colorRed = function(c) { return colorStruct.accessor(c, 0); };
 var colorGreen = function(c) { return colorStruct.accessor(c, 1); };
 var colorBlue = function(c) { return colorStruct.accessor(c, 2); };
 var colorAlpha = function(c) { return colorStruct.accessor(c, 3); };
+var equals = plt.baselib.equality.equals;
 //////////////////////////////////////////////////////////////////////
 
 var heir = plt.baselib.heir;
@@ -225,8 +226,8 @@ BaseImage.prototype.toDomNode = function(params) {
     // document.
     var onAfterAttach = function(event) {
         // jQuery(canvas).unbind('afterAttach', onAfterAttach);
-	var ctx = this.getContext("2d");
-	that.render(ctx, 0, 0);
+        var ctx = this.getContext("2d");
+      that.render(ctx, 0, 0);
     };
     jQuery(canvas).bind('afterAttach', onAfterAttach);
 
@@ -246,19 +247,18 @@ BaseImage.prototype.toDisplayedString = function(cache) { return "<image>"; }
 // otherwise we go pixel-by-pixel. It's up to exotic image types to provide
 // more efficient ways of comparing one another
 BaseImage.prototype.equals = function(other, aUnionFind) {
-  if(this.width    !== other.width    ||
-     this.height   !== other.height){ return false; }
+  if(this.width    !== other.getWidth()    ||
+     this.height   !== other.getHeight()){ return false; }
   // if they're both vertex-based images, all we need to compare are
   // their styles, vertices and color
   if(this.vertices && other.vertices){
     return (this.style    === other.style &&
             verticesEqual(this.vertices, other.vertices) &&
-            types.isEqual(this.color, other.color, aUnionFind));
+            equals(this.color, other.color, aUnionFind));
   }
   // if it's something more sophisticated, render both images to canvases
   // First check canvas dimensions, then go pixel-by-pixel
   var c1 = this.toDomNode(), c2 = other.toDomNode();
-  c1.afterAttach();  c2.afterAttach();
   if(c1.width !== c2.width || c1.height !== c2.height){ return false;}
   try{
     var ctx1 = c1.getContext('2d'), ctx2 = c2.getContext('2d'),
@@ -339,9 +339,9 @@ SceneImage.prototype.render = function(ctx, x, y) {
   }
 };
 
-SceneImage.prototype.isEqual = function(other, aUnionFind) {
+SceneImage.prototype.equals = function(other, aUnionFind) {
   if (!(other instanceof SceneImage)) {
-    return BaseImage.prototype.isEqual.call(this, other, aUnionFind);
+    return BaseImage.prototype.equals.call(this, other, aUnionFind);
   }
   if (this.width    !== other.width ||
       this.height   !== other.height ||
@@ -354,7 +354,7 @@ SceneImage.prototype.isEqual = function(other, aUnionFind) {
     var rec2 = other.children[i];
     if (rec1[1] !== rec2[1] ||
         rec1[2] !== rec2[2] ||
-        !types.isEqual(rec1[0], rec2[0], aUnionFind)) {
+        !equals(rec1[0], rec2[0], aUnionFind)) {
       return false;
     }
   }
@@ -448,9 +448,9 @@ FileImage.prototype.toDomNode = function(params) {
   return this.img.cloneNode(true);
 };
 
-FileImage.prototype.isEqual = function(other, aUnionFind) {
+FileImage.prototype.equals = function(other, aUnionFind) {
   if (!(other instanceof FileImage)) {
-    return BaseImage.prototype.isEqual.call(this, other, aUnionFind);
+    return BaseImage.prototype.equals.call(this, other, aUnionFind);
   }
   return (this.src === other.src);
 };
@@ -506,7 +506,7 @@ FileVideo.makeInstance = function(path, rawVideo) {
 FileVideo.prototype.render = function(ctx, x, y) {
     ctx.drawImage(this.video, x, y);
 };
-FileVideo.prototype.isEqual = function(other, aUnionFind) {
+FileVideo.prototype.equals = function(other, aUnionFind) {
   return (other instanceof FileVideo) && (this.src === other.src);
 };
 
@@ -617,9 +617,9 @@ OverlayImage.prototype.render = function(ctx, x, y) {
   ctx.restore();
 };
 
-OverlayImage.prototype.isEqual = function(other, aUnionFind) {
+OverlayImage.prototype.equals = function(other, aUnionFind) {
   if (!(other instanceof OverlayImage)) {
-    return BaseImage.prototype.isEqual.call(this, other, aUnionFind);
+    return BaseImage.prototype.equals.call(this, other, aUnionFind);
   }
   return (this.width     === other.width &&
           this.height    === other.height &&
@@ -627,8 +627,8 @@ OverlayImage.prototype.isEqual = function(other, aUnionFind) {
           this.y1        === other.y1 &&
           this.x2        === other.x2 &&
           this.y2        === other.y2 &&
-          types.isEqual(this.img1, other.img1, aUnionFind) &&
-          types.isEqual(this.img2, other.img2, aUnionFind) );
+          equals(this.img1, other.img1, aUnionFind) &&
+          equals(this.img2, other.img2, aUnionFind) );
 };
 
 
@@ -683,16 +683,16 @@ RotateImage.prototype.render = function(ctx, x, y) {
   ctx.restore();
 };
 
-RotateImage.prototype.isEqual = function(other, aUnionFind) {
+RotateImage.prototype.equals = function(other, aUnionFind) {
   if (!(other instanceof RotateImage)) {
-    return BaseImage.prototype.isEqual.call(this, other, aUnionFind);
+    return BaseImage.prototype.equals.call(this, other, aUnionFind);
   }
   return (this.width     === other.width &&
           this.height    === other.height &&
           this.angle     === other.angle &&
           this.translateX=== other.translateX &&
           this.translateY=== other.translateY &&
-          types.isEqual(this.img, other.img, aUnionFind) );
+          equals(this.img, other.img, aUnionFind) );
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -728,15 +728,15 @@ ScaleImage.prototype.render = function(ctx, x, y) {
   ctx.restore();
 };
 
-ScaleImage.prototype.isEqual = function(other, aUnionFind) {
+ScaleImage.prototype.equals = function(other, aUnionFind) {
   if (!(other instanceof ScaleImage)) {
-    return BaseImage.prototype.isEqual.call(this, other, aUnionFind);
+    return BaseImage.prototype.equals.call(this, other, aUnionFind);
   }
   return (this.width     === other.width &&
           this.height    === other.height &&
           this.xFactor   === other.xFactor &&
           this.yFactor   === other.yFactor &&
-          types.isEqual(this.img, other.img, aUnionFind) );
+          equals(this.img, other.img, aUnionFind) );
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -763,15 +763,15 @@ CropImage.prototype.render = function(ctx, x, y) {
   ctx.restore();
 };
 
-CropImage.prototype.isEqual = function(other, aUnionFind) {
+CropImage.prototype.equals = function(other, aUnionFind) {
   if (!(other instanceof CropImage)) {
-    return BaseImage.prototype.isEqual.call(this, other, aUnionFind);
+    return BaseImage.prototype.equals.call(this, other, aUnionFind);
   }
   return (this.width     === other.width &&
           this.height    === other.height &&
           this.x         === other.x &&
           this.y         === other.y &&
-          types.isEqual(this.img, other.img, aUnionFind) );
+          equals(this.img, other.img, aUnionFind) );
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -797,11 +797,11 @@ FrameImage.prototype.render = function(ctx, x, y) {
   ctx.restore();
 };
 
-FrameImage.prototype.isEqual = function(other, aUnionFind) {
+FrameImage.prototype.equals = function(other, aUnionFind) {
   if (!(other instanceof FrameImage)) {
-    return BaseImage.prototype.isEqual.call(this, other, aUnionFind);
+    return BaseImage.prototype.equals.call(this, other, aUnionFind);
   }
-  return (types.isEqual(this.img, other.img, aUnionFind) );
+  return equals(this.img, other.img, aUnionFind);
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -842,14 +842,14 @@ FlipImage.prototype.getHeight = function() {
   return this.height;
 };
 
-FlipImage.prototype.isEqual = function(other, aUnionFind) {
+FlipImage.prototype.equals = function(other, aUnionFind) {
   if (!(other instanceof FlipImage)) {
-    return BaseImage.prototype.isEqual.call(this, other, aUnionFind);
+    return BaseImage.prototype.equals.call(this, other, aUnionFind);
   }
   return (this.width     === other.width &&
           this.height    === other.height &&
           this.direction === other.direction &&
-          types.isEqual(this.img, other.img, aUnionFind) );
+          equals(this.img, other.img, aUnionFind) );
 };
 
 
@@ -1042,9 +1042,9 @@ TextImage.prototype.getBaseline = function() {
   return this.size;
 };
 
-TextImage.prototype.isEqual = function(other, aUnionFind) {
+TextImage.prototype.equals = function(other, aUnionFind) {
   if (!(other instanceof TextImage)) {
-    return BaseImage.prototype.isEqual.call(this, other, aUnionFind);
+    return BaseImage.prototype.equals.call(this, other, aUnionFind);
   }
   return (this.msg      === other.msg &&
           this.size     === other.size &&
@@ -1053,7 +1053,7 @@ TextImage.prototype.isEqual = function(other, aUnionFind) {
           this.style    === other.style &&
           this.weight   === other.weight &&
           this.underline === other.underline &&
-          types.isEqual(this.color, other.color, aUnionFind) &&
+          equals(this.color, other.color, aUnionFind) &&
           this.font === other.font);
 };
 
@@ -1171,14 +1171,14 @@ EllipseImage.prototype.render = function(ctx, aX, aY) {
   ctx.restore();
 };
 
-EllipseImage.prototype.isEqual = function(other, aUnionFind) {
+EllipseImage.prototype.equals = function(other, aUnionFind) {
   if (!(other instanceof EllipseImage)) {
-    return BaseImage.prototype.isEqual.call(this, other, aUnionFind);
+    return BaseImage.prototype.equals.call(this, other, aUnionFind);
   }
   return (this.width    === other.width &&
           this.height   === other.height &&
           this.style    === other.style &&
-          types.isEqual(this.color, other.color, aUnionFind));
+          equals(this.color, other.color, aUnionFind));
 };
 
 
