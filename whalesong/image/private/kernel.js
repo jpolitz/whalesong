@@ -1087,47 +1087,34 @@ var StarImage = function(points, outer, inner, style, color) {
 StarImage.prototype = heir(BaseImage.prototype);
 
 /////////////////////////////////////////////////////////////////////
-//TriangleImage: Number Number Mode Color -> Image
-var TriangleImage = function(side, angle, style, color) {
+//TriangleImage: Number Number Number Mode Color -> Image
+// Draws a triangle with the base = sideC, and the angle between sideC
+// and sideB being angleA
+// See http://docs.racket-lang.org/teachpack/2htdpimage.html#(def._((lib._2htdp/image..rkt)._triangle))
+var TriangleImage = function(sideC, angleA, sideB, style, color) {
   BaseImage.call(this);
-  // sin(angle/2-in-radians) * side = half of base
-  // cos(angle/2-in-radians) * side = height of altitude
-  this.width = Math.sin(angle/2 * Math.PI / 180) * side * 2;
-  this.height = Math.floor(Math.abs(Math.cos(angle/2 * Math.PI / 180)) * side);
+  this.width = sideC;
+  this.height = Math.sqrt(Math.pow(sideB,2) - Math.pow(0.5*sideC,2));
+  
   var vertices = [];
   // if angle < 180 start at the top of the canvas, otherwise start at the bottom
-  if(angle < 180){
-    vertices.push({x:this.width/2, y:0});
-    vertices.push({x:0,            y:this.height});
-    vertices.push({x:this.width,   y:this.height});
+  if(angleA < 180){
+    vertices.push({x: 0, y: 0});
+    vertices.push({x: sideC, y: 0});
+    vertices.push({x: sideB*Math.cos(angleA*Math.PI/180),
+                   y: this.height});
   } else {
-    vertices.push({x:this.width/2, y:this.height});
-    vertices.push({x:0,            y:0});
-    vertices.push({x:this.width,   y:0});
+    vertices.push({x: 0, y: this.height - 0});
+    vertices.push({x: sideC, y: this.height - 0});
+    vertices.push({x: Math.abs(sideB*Math.cos(angleA*Math.PI/180)),
+                   y: 0});
   }
-  this.side = side;
-  this.angle = angle;
+  this.vertices = vertices;
+  
   this.style = style;
   this.color = color;
-  this.vertices = vertices;
 };
 TriangleImage.prototype = heir(BaseImage.prototype);
-
-/////////////////////////////////////////////////////////////////////
-//RightTriangleImage: Number Number Mode Color -> Image
-var RightTriangleImage = function(side1, side2, style, color) {
-  BaseImage.call(this);
-  this.width = side1;
-  this.height = side2;
-  this.side1 = side1;
-  this.side2 = side2;
-  this.style = style;
-  this.color = color;
-  this.vertices = [{x:    0, y:side2},
-                   {x:side1, y:side2},
-                   {x:    0, y:0}];
-};
-RightTriangleImage.prototype = heir(BaseImage.prototype);
 
 //////////////////////////////////////////////////////////////////////
 //Ellipse : Number Number Mode Color -> Image
@@ -1290,11 +1277,8 @@ var makePolygonImage = function(length, count, step, style, color) {
 var makeSquareImage = function(length, style, color) {
     return new RectangleImage(length, length, style, color);
 };
-var makeRightTriangleImage = function(side1, side2, style, color) {
-    return new RightTriangleImage(side1, side2, style, color);
-};
-var makeTriangleImage = function(side, angle, style, color) {
-    return new TriangleImage(side, angle, style, color);
+var makeTriangleImage = function(sideA, angleC, sideB, style, color) {
+    return new TriangleImage(sideA, angleC, sideB, style, color);
 };
 var makeEllipseImage = function(width, height, style, color) {
     return new EllipseImage(width, height, style, color);
@@ -1343,7 +1327,6 @@ var isPolygonImage = function(x) { return x instanceof PolygonImage; };
 var isRhombusImage = function(x) { return x instanceof RhombusImage; };
 var isSquareImage	= function(x) { return x instanceof SquareImage; };
 var isTriangleImage= function(x) { return x instanceof TriangleImage; };
-var isRightTriangleImage = function(x) { return x instanceof RightTriangleImage; };
 var isEllipseImage = function(x) { return x instanceof EllipseImage; };
 var isLineImage	= function(x) { return x instanceof LineImage; };
 var isOverlayImage = function(x) { return x instanceof OverlayImage; };
@@ -1387,7 +1370,6 @@ EXPORTS.PolygonImage = PolygonImage;
 EXPORTS.TextImage = TextImage;
 EXPORTS.StarImage = StarImage;
 EXPORTS.TriangleImage = TriangleImage;
-EXPORTS.RightTriangleImage = RightTriangleImage;
 EXPORTS.EllipseImage = EllipseImage;
 EXPORTS.LineImage = LineImage;
 EXPORTS.StarImage = StarImage;
@@ -1403,7 +1385,6 @@ EXPORTS.makeRectangleImage = makeRectangleImage;
 EXPORTS.makeRhombusImage = makeRhombusImage;
 EXPORTS.makePolygonImage = makePolygonImage;
 EXPORTS.makeSquareImage = makeSquareImage;
-EXPORTS.makeRightTriangleImage = makeRightTriangleImage;
 EXPORTS.makeTriangleImage = makeTriangleImage;
 EXPORTS.makeEllipseImage = makeEllipseImage;
 EXPORTS.makeLineImage = makeLineImage;
@@ -1439,7 +1420,6 @@ EXPORTS.isPolygonImage = isPolygonImage;
 EXPORTS.isRhombusImage = isRhombusImage;
 EXPORTS.isSquareImage = isSquareImage;
 EXPORTS.isTriangleImage = isTriangleImage;
-EXPORTS.isRightTriangleImage = isRightTriangleImage;
 EXPORTS.isEllipseImage = isEllipseImage;
 EXPORTS.isLineImage = isLineImage;
 EXPORTS.isOverlayImage = isOverlayImage;

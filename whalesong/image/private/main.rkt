@@ -47,6 +47,13 @@
                     regular-polygon
                     ellipse
                     triangle
+                    triangle/sas
+                    triangle/sss
+                    triangle/ass
+                    triangle/ssa
+                    triangle/aas
+                    triangle/asa
+                    triangle/saa
                     right-triangle
                     isosceles-triangle
                     star

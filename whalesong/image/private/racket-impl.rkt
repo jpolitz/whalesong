@@ -34,6 +34,13 @@
          regular-polygon
          ellipse
          triangle
+         triangle/sas
+         triangle/sss
+         triangle/ass
+         triangle/ssa
+         triangle/aas
+         triangle/saa
+         triangle/asa
          right-triangle
          isosceles-triangle
          star
@@ -120,6 +127,13 @@
   regular-polygon
   ellipse
   triangle
+  triangle/sas
+  triangle/sss
+  triangle/ass
+  triangle/ssa
+  triangle/aas
+  triangle/saa
+  triangle/asa
   right-triangle
   isosceles-triangle
   star
