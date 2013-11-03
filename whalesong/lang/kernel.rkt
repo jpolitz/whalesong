@@ -456,6 +456,9 @@ box?
   string-ci<=?
   string-ci>=?
 
+  string-upcase
+  string-downcase
+
   string-copy
   substring
   string-append

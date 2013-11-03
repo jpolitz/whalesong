@@ -1356,6 +1356,22 @@
             return true;
         });
 
+    installPrimitiveProcedure(
+        'string-downcase',
+        1,
+        function (M) {
+            var s = checkString(M, 'string-downcase', 0).toString().toLowerCase();
+            return s;
+        });
+
+    installPrimitiveProcedure(
+        'string-upcase',
+        1,
+        function (M) {
+            var s = checkString(M, 'string-upcase', 0).toString().toUpperCase();
+            return s;
+        });
+
 
     installPrimitiveProcedure(
         'string-append',
