@@ -347,6 +347,7 @@
   inexact->exact
   exact->inexact
   number->string
+  real->decimal-string
   string->number
   procedure?
   procedure-arity

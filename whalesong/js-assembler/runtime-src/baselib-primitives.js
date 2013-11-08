@@ -1422,6 +1422,14 @@
             return checkNumber(M, 'number->string', 0).toString();
         });
 
+    installPrimitiveProcedure(
+        'real->decimal-string',
+        2,
+        function (M) {
+            var firstArg = checkNumber(M, 'real->decimal-string', 0);
+            var secondArg = checkNumber(M, 'real->decimal-string', 1);
+            return firstArg.toFixed(secondArg);
+        });
 
     installPrimitiveProcedure(
         'string->symbol',
