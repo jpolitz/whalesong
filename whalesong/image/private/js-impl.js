@@ -8,7 +8,7 @@ var checkSymbolOrString = plt.baselib.check.checkSymbolOrString;
 
 var isString = plt.baselib.strings.isString;
 var isSymbol = plt.baselib.symbols.isSymbol;
-
+var isEqual = plt.baselib.equality.equals;
 
 var isFontFamily = function(x){
     return ((isString(x) || isSymbol(x)) &&
@@ -37,9 +37,12 @@ var isFontWeight = function(x){
 	|| (x === false);		// false is also acceptable
 };
 var isMode = function(x) {
-    return ((isString(x) || isSymbol(x)) &&
-	    (x.toString().toLowerCase() == "solid" ||
-	     x.toString().toLowerCase() == "outline"));
+	return ((isString(x) || isSymbol(x)) &&
+          (x.toString().toLowerCase() == "solid" ||
+           x.toString().toLowerCase() == "outline")) ||
+  ((plt.baselib.numbers.isReal(x)) &&
+   (plt.baselib.numbers.greaterThanOrEqual(x, 0) &&
+    plt.baselib.numbers.lessThanOrEqual(x, 255)));
 };
 
 var isPlaceX = function(x) {
@@ -96,7 +99,7 @@ var _checkColor = plt.baselib.check.makeCheckArgumentType(
 var checkColor = function(MACHINE, functionName, position) {
     var aColor = _checkColor(MACHINE, functionName, position);
     if (colorDb.get(aColor)) {
-	aColor = colorDb.get(aColor);
+      aColor = colorDb.get(aColor);
     }
     return aColor;
 };
@@ -235,6 +238,15 @@ EXPORTS['image?'] =
             return isImage(MACHINE.e[MACHINE.e.length - 1]);
         });
 
+EXPORTS['image=?'] =
+    makePrimitiveProcedure(
+       'image=?',
+       2,
+       function(MACHINE) {
+         var img1 = checkImage(MACHINE, 'image=?', 0);
+         var img2 = checkImage(MACHINE, 'image=?', 1);
+         return isEqual(img1, img2);
+       });
 
 
 EXPORTS['text'] =
@@ -249,7 +261,7 @@ EXPORTS['text'] =
 	    return makeTextImage(aString.toString(), 
                                  jsnums.toFixnum(aSize),
                                  aColor,
-				 "normal",
+                                 "normal",
                                  "Optimer",
                                  "",
                                  "",
@@ -271,13 +283,13 @@ EXPORTS['text/font'] =
 	    var aWeight = checkFontWeight(MACHINE, "text/font", 6);
 	    var aUnderline = checkBoolean(MACHINE, "text/font", 7);
 	    return makeTextImage(aString.toString(),
-                                 jsnums.toFixnum(aSize),
-                                 aColor,
-				 aFace.toString(),
-                                 aFamily.toString(),
-                                 aStyle.toString(),
-				 aWeight.toString(),
-                                 aUnderline);
+                           jsnums.toFixnum(aSize),
+                           aColor,
+                           aFace.toString(),
+                           aFamily.toString(),
+                           aStyle.toString(),
+                           aWeight.toString(),
+                           aUnderline);
         });
 
 
@@ -331,17 +343,17 @@ EXPORTS['overlay'] =
         function(MACHINE) {
 	    var img1 = checkImage(MACHINE, "overlay", 0);
 	    var img2 = checkImage(MACHINE, "overlay", 1);
-            var restImages = [];
+      var restImages = [];
 	    for (var i = 2; i < MACHINE.a; i++) {
-		restImages.push(checkImage(MACHINE, "overlay", i));
+          restImages.push(checkImage(MACHINE, "overlay", i));
 	    }
             
 	    var img = makeOverlayImage(img1, img2, "middle", "middle");
 	    for (var i = 0; i < restImages.length; i++) {
-		img = makeOverlayImage(img, restImages[i], "middle", "middle");
+          img = makeOverlayImage(img, restImages[i], "middle", "middle");
 	    }
 	    return img;
-        });
+  });
 
 
 
@@ -354,10 +366,10 @@ EXPORTS['overlay/xy'] =
 	    var deltaX = checkReal(MACHINE, "overlay/xy", 1);
 	    var deltaY = checkReal(MACHINE, "overlay/xy", 2);
 	    var img2 = checkImage(MACHINE, "overlay/xy", 3);
-	    return makeOverlayImage(img1.updatePinhole(0, 0),
-				    img2.updatePinhole(0, 0),
-				    jsnums.toFixnum(deltaX),
-				    jsnums.toFixnum(deltaY));
+	    return makeOverlayImage(img1,
+                              img2,
+                              jsnums.toFixnum(deltaX),
+                              jsnums.toFixnum(deltaY));
         });
 
 
@@ -371,24 +383,21 @@ EXPORTS['overlay/xy'] =
 	     var placeY = checkPlaceY(MACHINE, "overlay/align", 1);
 	     var img1 = checkImage(MACHINE, "overlay/align", 2);
 	     var img2 = checkImage(MACHINE, "overlay/align", 3);
-             var restImages = [];
+       var restImages = [];
 	     for (var i = 4; i < MACHINE.a; i++) {
-                 restImages.push(checkImage(MACHINE, "overlay/align", i));
-             }
+            restImages.push(checkImage(MACHINE, "overlay/align", i));
+       }
 	     var img = makeOverlayImage(img1,
-					img2,
-					placeX.toString(),
-					placeY.toString());
+                                  img2,
+                                  placeX.toString(),
+                                  placeY.toString());
 	     for (var i = 0; i < restImages.length; i++)
-		 img = makeOverlayImage(img,
-					restImages[i], 
-					placeX.toString(), 
-					placeY.toString());
-	     return img;
-         });
-
-
-
+         img = makeOverlayImage(img,
+                                restImages[i],
+                                placeX.toString(), 
+                                placeY.toString());
+       return img;
+   });
 
 
 EXPORTS['underlay'] = 
@@ -400,15 +409,15 @@ EXPORTS['underlay'] =
 	    var img2 = checkImage(MACHINE, "underlay", 1);
 	    var restImages = [];
 	    for (var i = 2; i < MACHINE.a; i++) {
-		restImages.push(checkImage(MACHINE, "underlay", i));
+          restImages.push(checkImage(MACHINE, "underlay", i));
 	    }
 
-	    var img = makeOverlayImage(img2, img1, 0, 0);
+	    var img = makeOverlayImage(img2, img1, "middle", "middle");
 	    for (var i = 0; i < restImages.length; i++) {
-		img = makeOverlayImage(restImages[i], img, 0, 0);
+          img = makeOverlayImage(restImages[i], img, "middle", "middle");
 	    }
 	    return img;
-        });
+  });
 
 
 EXPORTS['underlay/xy'] = 
@@ -420,10 +429,10 @@ EXPORTS['underlay/xy'] =
 	    var deltaX = checkReal(MACHINE, "underlay/xy", 1);
 	    var deltaY = checkReal(MACHINE, "underlay/xy", 2);
 	    var img2 = checkImage(MACHINE, "underlay/xy", 3);
-	    return makeOverlayImage(img2.updatePinhole(0, 0), 
-				    img1.updatePinhole(0, 0),
-				    -(jsnums.toFixnum(deltaX)),
-				    -(jsnums.toFixnum(deltaY)));
+	    return makeOverlayImage(img2,
+                              img1,
+                              -jsnums.toFixnum(deltaX),
+                              -jsnums.toFixnum(deltaY));
         });
 
 EXPORTS['underlay/align'] = 
@@ -435,24 +444,24 @@ EXPORTS['underlay/align'] =
 	    var placeY = checkPlaceY(MACHINE, "underlay/align", 1);
 	    var img1 = checkImage(MACHINE, "underlay/align", 2);
 	    var img2 = checkImage(MACHINE, "underlay/align", 3);
-            var restImages = [];
-            for (var i = 4; i < MACHINE.a; i++) {
-                restImages.push(checkImage(MACHINE, "underlay/align", i));
-            }
+      var restImages = [];
+      for (var i = 4; i < MACHINE.a; i++) {
+          restImages.push(checkImage(MACHINE, "underlay/align", i));
+      }
 	    
 	    var img = makeOverlayImage(img2,
-				       img1,
-				       placeX.toString(),
-				       placeY.toString());
+                                 img1,
+                                 placeX.toString(),
+                                 placeY.toString());
 	    
 	    for (var i = 0; i < restImages.length; i++) {
-		img = makeOverlayImage(restImages[i], 
-				       img,
-				       placeX.toString(), 
-				       placeY.toString());
-            }
+        img = makeOverlayImage(restImages[i],
+                               img,
+                               placeX.toString(), 
+                               placeY.toString());
+      }
 	    return img;
-        });
+  });
 
 
 
@@ -469,15 +478,14 @@ EXPORTS['beside'] =
             }
 	    
 	    var img = makeOverlayImage(img1,
-				       img2,
-				       "beside",
-				       "middle");
+                                 img2,
+                                 "beside",
+                                 "middle");
 	    
 	    for (var i = 0; i < restImages.length; i++) {
-		img = makeOverlayImage(img, restImages[i], "beside", "middle");
-            }
-
-            return img;
+          img = makeOverlayImage(img, restImages[i], "beside", "middle");
+      }
+      return img;
 	});
 
 
@@ -500,15 +508,14 @@ EXPORTS['beside/align'] =
 				       placeY.toString());
 	    
 	    for (var i = 0; i < restImages.length; i++) {
-		img = makeOverlayImage(img,
-				       restImages[i], 
-				       "beside",
-				       placeY.toString());
-            }
+            img = makeOverlayImage(img,
+                                   restImages[i],
+                                   "beside",
+                                   placeY.toString());
+      }
 	    
 	    return img;
-
-        });
+    });
 
 EXPORTS['above'] = 
     makePrimitiveProcedure(
@@ -523,18 +530,17 @@ EXPORTS['above'] =
             }
 	    
 	    var img = makeOverlayImage(img1,
-				       img2,
-				       "middle",
-				       "above");
+                                 img2,
+                                 "middle",
+                                 "above");
 	    
 	    for (var i = 0; i < restImages.length; i++)
-		img = makeOverlayImage(img,
-				       restImages[i], 
-				       "middle",
-				       "above");
-            return img;
-	    
-        });
+          img = makeOverlayImage(img,
+                                 restImages[i],
+                                 "middle",
+                                 "above");
+      return img;
+    });
 
 EXPORTS['above/align'] = 
     makePrimitiveProcedure(
@@ -544,25 +550,25 @@ EXPORTS['above/align'] =
 	    var placeX = checkPlaceX(MACHINE, "above/align", 0);
 	    var img1 = checkImage(MACHINE, "above/align", 1);
 	    var img2 = checkImage(MACHINE, "above/align", 2);
-            var restImages = [];
-            for (var i = 3; i < MACHINE.a; i++) {
+      var restImages = [];
+      for (var i = 3; i < MACHINE.a; i++) {
 	        restImages.push(checkImage(MACHINE, "above/align", i));
-            }
+      }
 
 	    
 	    var img = makeOverlayImage(img1,
-				       img2,
-				       placeX.toString(),
-				       "above");
+                                 img2,
+                                 placeX.toString(),
+                                 "above");
 	    
 	    for (var i = 0; i < restImages.length; i++)
-		img = makeOverlayImage(img,
-				       restImages[i], 
-				       placeX.toString(),
-				       "above");
+          img = makeOverlayImage(img,
+                                 restImages[i],
+                                 placeX.toString(),
+                                 "above");
 	    
 	    return img;
-        });
+    });
 
 
 
@@ -580,6 +586,27 @@ EXPORTS['empty-scene'] =
                                   true);
 	});
 
+EXPORTS['put-image'] =
+makePrimitiveProcedure(
+                       'put-image',
+                       4,
+                       function(MACHINE) {
+                       var picture = checkImage(MACHINE, "put-image", 0);
+                       var x = checkReal(MACHINE, "put-image", 1);
+                       var y = checkReal(MACHINE, "put-image", 2);
+                       var background = checkImageOrScene(MACHINE, "put-image", 3);
+                       if (isScene(background)) {
+                       return background.add(picture, jsnums.toFixnum(x), jsnums.toFixnum(y));
+                       } else {
+                       var newScene = makeSceneImage(background.getWidth(),
+                                                     background.getHeight(),
+                                                     [],
+                                                     false);
+                       newScene = newScene.add(background, background.getWidth()/2, background.getHeight()/2);
+                       newScene = newScene.add(picture, jsnums.toFixnum(x), background.getHeight() - jsnums.toFixnum(y));
+                       return newScene;
+                       }
+                       });
 
 
 EXPORTS['place-image'] = 
@@ -592,18 +619,17 @@ EXPORTS['place-image'] =
 	    var y = checkReal(MACHINE, "place-image", 2);
             var background = checkImageOrScene(MACHINE, "place-image", 3);
 	    if (isScene(background)) {
-		return background.add(picture, jsnums.toFixnum(x), jsnums.toFixnum(y));
+        return background.add(picture, jsnums.toFixnum(x), jsnums.toFixnum(y));
 	    } else {
-		var newScene = makeSceneImage(background.getWidth(),
-					      background.getHeight(),
-					      [], 
-					      false);
-		newScene = newScene.add(background.updatePinhole(0, 0), 0, 0);
-		newScene = newScene.add(picture, jsnums.toFixnum(x), jsnums.toFixnum(y));
-		return newScene;
+        var newScene = makeSceneImage(background.getWidth(),
+                                      background.getHeight(),
+                                      [], 
+                                      false);
+        newScene = newScene.add(background, background.getWidth()/2, background.getHeight()/2);
+        newScene = newScene.add(picture, jsnums.toFixnum(x), jsnums.toFixnum(y));
+        return newScene;
 	    }
-
-        });
+  });
 
 
 
@@ -612,36 +638,31 @@ EXPORTS['place-image/align'] =
         'place-image/align',
         6,
         function(MACHINE) {
-	    var img = checkImage(MACHINE, "place-image/align", 0);
-	    var x = checkReal(MACHINE, "place-image/align", 1);
-	    var y = checkReal(MACHINE, "place-image/align", 2);
-	    var placeX = checkPlaceX(MACHINE, "place-image/align", 3);
-	    var placeY = checkPlaceY(MACHINE, "place-image/align", 4);
-	    var background = checkImageOrScene(MACHINE, "place-image/align", 5);
+       var img = checkImage(MACHINE, "place-image/align", 0);
+       var x = checkReal(MACHINE, "place-image/align", 1);
+       var y = checkReal(MACHINE, "place-image/align", 2);
+       var placeX = checkPlaceX(MACHINE, "place-image/align", 3);
+       var placeY = checkPlaceY(MACHINE, "place-image/align", 4);
+       var background = checkImageOrScene(MACHINE, "place-image/align", 5);
 	    
-	    // calculate x and y based on placeX and placeY
-	    if (placeX == "left") x = x + img.pinholeX;
-	    else if (placeX == "right") x = x - img.pinholeX;
-	    if (placeY == "top") y = y + img.pinholeY;
-	    else if (placeY == "bottom") y = y - img.pinholeY;
+       // calculate x and y based on placeX and placeY
+       if		 (placeX == "left"  )  x = x + img.getWidth()/2;
+       else if (placeX == "right" ) x = x - img.getWidth()/2;
+       if		 (placeY == "top"   )  y = y + img.getHeight()/2;
+       else if (placeY == "bottom") y = y - img.getHeight()/2;
 
 	    if (isScene(background)) {
-		return background.add(img, jsnums.toFixnum(x), jsnums.toFixnum(y));
+          return background.add(img, jsnums.toFixnum(x), jsnums.toFixnum(y));
 	    } else {
-		var newScene = makeSceneImage(background.getWidth(),
-					      background.getHeight(),
-					      [], 
-					      false);
-		newScene = newScene.add(background.updatePinhole(0, 0), 0, 0);
-		newScene = newScene.add(img, jsnums.toFixnum(x), jsnums.toFixnum(y));
-		return newScene;
-            }
-        });
-
-
-
-
-
+          var newScene = makeSceneImage(background.getWidth(),
+                                        background.getHeight(),
+                                        [], 
+                                        false);
+         newScene = newScene.add(background, background.getWidth()/2, background.getHeight()/2);
+         newScene = newScene.add(img, jsnums.toFixnum(x), jsnums.toFixnum(y));
+         return newScene;
+      }
+  });
 
 
 EXPORTS['rotate'] = 
@@ -765,8 +786,10 @@ EXPORTS['add-line'] =
 	    var line = makeLineImage(jsnums.toFixnum(x2-x1),
 				     jsnums.toFixnum(y2-y1),
 				     c,
-				     true);
-	    return makeOverlayImage(line, img, x1, y1);
+				     true),
+           leftMost = Math.min(x1,x2),
+           topMost = Math.min(y1,y2);
+	    return makeOverlayImage(line, img, -leftMost, -topMost);
         });
 
 
@@ -784,18 +807,19 @@ EXPORTS['scene+line'] =
 	    var c = checkColor(MACHINE, "scene+line", 5);
 	    // make a scene containing the image
 	    var newScene = makeSceneImage(jsnums.toFixnum(img.getWidth()), 
-					  jsnums.toFixnum(img.getHeight()), 
-					  [],
-					  true);
-	    newScene = newScene.add(img.updatePinhole(0, 0), 0, 0);
+                                    jsnums.toFixnum(img.getHeight()),
+                                    [],
+                                    true);
+      newScene = newScene.add(img, img.getWidth()/2, img.getHeight()/2);
 	    // make an image containing the line
 	    var line = makeLineImage(jsnums.toFixnum(x2-x1),
-				     jsnums.toFixnum(y2-y1),
-				     c,
-				     false);
-	    // add the line to scene, offset by the original amount
-	    return newScene.add(line, jsnums.toFixnum(x1), jsnums.toFixnum(y1));
-        });
+                               jsnums.toFixnum(y2-y1),
+                               c,
+                               false),
+      leftMost = Math.min(x1,x2),
+      topMost = Math.min(y1,y2);
+      return newScene.add(line, line.getWidth()/2+leftMost, line.getHeight()/2+topMost);
+    });
 
 
 EXPORTS['circle'] = 
@@ -834,7 +858,7 @@ EXPORTS['rectangle'] =
 	    return makeRectangleImage(jsnums.toFixnum(w),
 				      jsnums.toFixnum(h),
 				      s.toString(), 
-                                      c);
+              c);
         });
 
 
@@ -877,17 +901,154 @@ EXPORTS['triangle'] =
         'triangle',
         3,
         function(MACHINE) {
-	    var s = checkNonNegativeReal(MACHINE, "triangle", 0);
-	    var m = checkMode(MACHINE, "triangle", 1);
-	    var c = checkColor(MACHINE, "triangle", 2);
-	    return makeTriangleImage(jsnums.toFixnum(s), 
-				     60, 
-				     m.toString(),
-				     c);
+          var s = checkNonNegativeReal(MACHINE, "triangle", 0);
+          var m = checkMode(MACHINE, "triangle", 1);
+          var c = checkColor(MACHINE, "triangle", 2);
+          return makeTriangleImage(jsnums.toFixnum(s), 
+                                   jsnums.toFixnum(60+180), // add 180 to make the triangle point up
+                                   jsnums.toFixnum(s),
+                                   m.toString(),
+                                   c);
         });
 
+EXPORTS['triangle/sas'] =
+    makePrimitiveProcedure(
+        'triangle/sas',
+         5,
+         function(MACHINE) {
+           var base = checkNonNegativeReal(MACHINE, "triangle/sas", 0);
+           var angleC = checkAngle(MACHINE, "triangle/sas", 1);
+           var sideB = checkNonNegativeReal(MACHINE, "triangle/sas", 2);
+           var style = checkMode(MACHINE, "triangle/sas", 3);
+           var color = checkColor(MACHINE, "triangle/sas", 4);
+           if (colorDb.get(color)) { color = colorDb.get(color); }
+           return makeTriangleImage(jsnums.toFixnum(base),
+                                    jsnums.toFixnum(angleC),
+                                    jsnums.toFixnum(sideB),
+                                    style.toString(),
+                                    color);
+         });
 
-EXPORTS['right-triangle'] = 
+EXPORTS['triangle/sss'] =
+    makePrimitiveProcedure(
+         'triangle/sss',
+         5,
+         function(MACHINE) {
+           var base = checkNonNegativeReal(MACHINE, "triangle/sss", 0);
+           var sideB = checkNonNegativeReal(MACHINE, "triangle/sss", 1);
+           var sideC = checkNonNegativeReal(MACHINE, "triangle/sss", 2);
+           var style = checkMode(MACHINE, "triangle/sss", 3);
+           var color = checkColor(MACHINE, "triangle/sss", 4);
+           if (colorDb.get(color)) { color = colorDb.get(color); }
+           var angleC = (Math.acos((base*base + sideB*sideB - sideC*sideC) / (2*base*sideB)))*180/Math.PI;
+           return makeTriangleImage(jsnums.toFixnum(base),
+                                   jsnums.toFixnum(angleC),
+                                   jsnums.toFixnum(sideB),
+                                   style.toString(),
+                                   color);
+         });
+
+EXPORTS['triangle/ass'] =
+    makePrimitiveProcedure(
+         'triangle/ass',
+         5,
+         function(MACHINE) {
+         var angle = checkAngle(MACHINE, "triangle/ass", 0);
+         var base = checkNonNegativeReal(MACHINE, "triangle/ass", 1);
+         var sideB = checkNonNegativeReal(MACHINE, "triangle/ass", 2);
+         var style = checkMode(MACHINE, "triangle/ass", 3);
+         var color = checkColor(MACHINE, "triangle/ass", 4);
+         if (colorDb.get(color)) { color = colorDb.get(color); }
+         return makeTriangleImage(jsnums.toFixnum(base),
+                                 jsnums.toFixnum(angle),
+                                 jsnums.toFixnum(sideB),
+                                 style.toString(),
+                                 color);
+                       });
+
+EXPORTS['triangle/ssa'] =
+    makePrimitiveProcedure(
+         'triangle/ssa',
+         5,
+         function(MACHINE) {
+         var base = checkNonNegativeReal(MACHINE, "triangle/ssa", 0);
+         var sideB = checkNonNegativeReal(MACHINE, "triangle/ssa", 1);
+         var angleA = checkAngle(MACHINE, "triangle/ssa", 2);
+         var style = checkMode(MACHINE, "triangle/ssa", 3);
+         var color = checkColor(MACHINE, "triangle/ssa", 4);
+         if (colorDb.get(color)) { color = colorDb.get(color); }
+         var angleB = Math.asin(Math.sin(angleA*Math.PI/180)*sideB/sideA)*180/Math.PI;
+         var angleC = (180 - angleA - angleB);
+         return makeTriangleImage(jsnums.toFixnum(base),
+                                 jsnums.toFixnum(angleC),
+                                 jsnums.toFixnum(sideB),
+                                 style.toString(),
+                                 color);
+                       });
+
+EXPORTS['triangle/aas'] =
+    makePrimitiveProcedure(
+         'triangle/aas',
+         5,
+         function(MACHINE) {
+           var angleA = checkAngle(MACHINE, "triangle/aas", 0);
+           var angleB = checkAngle(MACHINE, "triangle/aas", 1);
+           var base = checkNonNegativeReal(MACHINE, "triangle/aas", 2);
+           var style = checkMode(MACHINE, "triangle/aas", 3);
+           var color = checkColor(MACHINE, "triangle/aas", 4);
+           if (colorDb.get(color)) { color = colorDb.get(color); }
+           var angleC = (180 - angleA - angleB);
+           var sideB = (base * Math.sin(angleB*Math.PI/180)) / (Math.sin(angleC*Math.PI/180));
+           return makeTriangleImage(jsnums.toFixnum(base),
+                                   jsnums.toFixnum(angleC),
+                                   jsnums.toFixnum(sideB),
+                                   style.toString(),
+                                   color);
+                       });
+
+EXPORTS['triangle/asa'] =
+    makePrimitiveProcedure(
+         'triangle/asa',
+         5,
+         function(MACHINE) {
+           var angleA = checkAngle(MACHINE, "triangle/asa", 0);
+           var sideC  = checkNonNegativeReal(MACHINE, "triangle/asa", 1);
+           var angleB = checkAngle(MACHINE, "triangle/asa", 2);
+           var style = checkMode(MACHINE, "triangle/asa", 3);
+           var color = checkColor(MACHINE, "triangle/asa", 4);
+           if (colorDb.get(color)) { color = colorDb.get(color); }
+           var angleC = (180 - angleA - angleB);
+           var base = (sideC * Math.sin(angleA*Math.PI/180)) / (Math.sin(angleC*Math.PI/180));
+           var sideB = (sideC * Math.sin(angleB*Math.PI/180)) / (Math.sin(angleC*Math.PI/180));
+           return makeTriangleImage(jsnums.toFixnum(base),
+                                   jsnums.toFixnum(angleC),
+                                   jsnums.toFixnum(sideB),
+                                   style.toString(),
+                                   color);
+         });
+
+EXPORTS['triangle/saa'] =
+    makePrimitiveProcedure(
+           'triangle/saa',
+           5,
+           function(MACHINE) {
+           var base = checkNonNegativeReal(MACHINE, "triangle/saa", 0);
+           var angleC  = checkAngle(MACHINE, "triangle/saa", 1);
+           var angleA = checkAngle(MACHINE, "triangle/saa", 2);
+           var style = checkMode(MACHINE, "triangle/saa", 3);
+           var color = checkColor(MACHINE, "triangle/saa", 4);
+           if (colorDb.get(color)) { color = colorDb.get(color); }
+           var angleB = (180 - angleA - angleC);
+           var sideB = (base * Math.sin(angleB*Math.PI/180)) / (Math.sin(angleA*Math.PI/180));
+           return makeTriangleImage(jsnums.toFixnum(base),
+                                   jsnums.toFixnum(angleC),
+                                   jsnums.toFixnum(sideB),
+                                   style.toString(),
+                                   color);
+           });
+
+
+EXPORTS['right-triangle'] =
     makePrimitiveProcedure(
         'right-triangle',
         4,
@@ -896,10 +1057,11 @@ EXPORTS['right-triangle'] =
 	    var side2 = checkNonNegativeReal(MACHINE, "right-triangle", 1);
 	    var s = checkMode(MACHINE, "right-triangle", 2);
 	    var c = checkColor(MACHINE, "right-triangle", 3);
-	    return makeRightTriangleImage(jsnums.toFixnum(side1), 
-                                          jsnums.toFixnum(side2),
-                                          s.toString(),
-                                          c);
+	    return makeTriangleImage(jsnums.toFixnum(side1),
+                               jsnums.toFixnum(90+180), // add 180 to make the triangle point up
+                               jsnums.toFixnum(side2),
+                               s.toString(),
+                               c);
         });
 
 
@@ -909,15 +1071,17 @@ EXPORTS['isosceles-triangle'] =
         4,
         function(MACHINE) {
 	    var side = checkNonNegativeReal(MACHINE, "isosceles-triangle", 0);
-	    var angle = checkAngle(MACHINE, "isosceles-triangle", 1);
-	    var s = checkMode(MACHINE, "isosceles-triangle", 2);
-	    var c = checkColor(MACHINE, "isosceles-triangle", 3);
-	    return makeTriangleImage(jsnums.toFixnum(side), 
-                                     jsnums.toFixnum(angle), 
-                                     s.toString(),
-                                     c);
-        });
-
+	    var angleC = checkAngle(MACHINE, "isosceles-triangle", 1);
+	    var style = checkMode(MACHINE, "isosceles-triangle", 2);
+	    var color = checkColor(MACHINE, "isosceles-triangle", 3);
+      var angleAB = (180-angleC)/2;
+      var base = 2*side*Math.sin((angleC*Math.PI/180)/2);
+      return makeTriangleImage(jsnums.toFixnum(base),
+                              jsnums.toFixnum(angleAB+180),// add 180 to make the triangle point up
+                              jsnums.toFixnum(side),
+                              style.toString(),
+                              color);
+     });
 
 EXPORTS['star'] = 
     makePrimitiveProcedure(

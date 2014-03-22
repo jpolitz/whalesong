@@ -15,6 +15,7 @@
          above
          above/align
          empty-scene
+         put-image
          place-image
          place-image/align
          rotate
@@ -33,6 +34,13 @@
          regular-polygon
          ellipse
          triangle
+         triangle/sas
+         triangle/sss
+         triangle/ass
+         triangle/ssa
+         triangle/aas
+         triangle/saa
+         triangle/asa
          right-triangle
          isosceles-triangle
          star
@@ -51,6 +59,7 @@
          angle?
          side-count?
          image?
+         image=?
          ;; Something funky is happening on the Racket side of things with regards
          ;; to step-count?  See:  http://bugs.racket-lang.org/query/?cmd=view&pr=12031
          ;; step-count?
@@ -99,6 +108,7 @@
   above
   above/align
   empty-scene
+  put-image
   place-image
   place-image/align
   rotate
@@ -117,6 +127,13 @@
   regular-polygon
   ellipse
   triangle
+  triangle/sas
+  triangle/sss
+  triangle/ass
+  triangle/ssa
+  triangle/aas
+  triangle/saa
+  triangle/asa
   right-triangle
   isosceles-triangle
   star
@@ -136,6 +153,7 @@
   side-count?
 
   image?
+  image=?
   ;; Something funky is happening on the Racket side of things with regards
   ;; to step-count?  See:  http://bugs.racket-lang.org/query/?cmd=view&pr=12031
   ;; step-count?
